@@ -1,56 +1,76 @@
-
 import React, { useState, useEffect } from 'react';
-import { Cloud, Sun, CloudRain, CloudLightning, CloudFog, CloudDrizzle, Loader } from 'lucide-react';
+import { Cloud, Sun, CloudRain, CloudLightning, CloudFog, CloudDrizzle, Loader, Search, RefreshCw } from 'lucide-react';
+import { type WeatherLocation, type WeatherForecastItem, type DailyForecast, type WeeklyForecastItem 
+                                                                 } from './types/weatherDataTypes';
+
+//* background images 
 import cloudy from '../assets/images/clouds.jpg';
-import WeatherNavBar from './MinimalistNavBar';
+import sunny from '../assets/images/sunny.jpg';
+import rainy from '../assets/images/rain.jpg';
+import mist from '../assets/images/mist.jpg';
+import dust from '../assets/images/dust.jpg';
+import snowy from '../assets/images/snowy.jpg';
+import thunder from '../assets/images/thunder.jpg';
+import tornado from '../assets/images/tornado.jpg';
+import thunderstorm from '../assets/images/thunderstorm.jpg';
+import drizzle from '../assets/images/drizzle.jpg';
+import windy from '../assets/images/windy.jpg';
 
-// Types for weather data
-interface WeatherLocation {
-  name: string;
-  country: string;
-  lat: number;
-  lon: number;
+interface SearchWeatherDashboardProps {
+  city?: string;
+  locationError?: string | null;
 }
 
-interface WeatherForecastItem {
-  dt: number;
-  main: {
-    temp: number;
-    feels_like: number;
-    humidity: number;
-  };
-  weather: Array<{
-    id: number;
-    main: string;
-    description: string;
-    icon: string;
-  }>;
-  dt_txt?: string;
-}
-
-interface DailyForecast {
-  time: string;
-  temp: string;
-  icon: React.JSX.Element;
-  description: string;
-}
-
-interface WeeklyForecastItem {
-  day: string;
-  temp: string;
-  icon: React.JSX.Element;
-  description: string;
-}
-
-// Component
-const WeatherDashboard: React.FC = () => {
+const SearchWeatherDashboard: React.FC<SearchWeatherDashboardProps> = ({ city, locationError }) => {
   const [activeTab, setActiveTab] = useState<'day' | 'week'>('day');
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(locationError || null);
   const [location, setLocation] = useState<WeatherLocation | null>(null);
   const [currentWeather, setCurrentWeather] = useState<WeatherForecastItem | null>(null);
   const [hourlyForecast, setHourlyForecast] = useState<DailyForecast[]>([]);
   const [weeklyForecast, setWeeklyForecast] = useState<WeeklyForecastItem[]>([]);
+
+
+
+  //* background image map
+const backgroundImageMap: Record<string, string> = {
+  sunny,
+  rainy,
+  snowy,
+  thunder,
+  thunderstorm,
+  drizzle,
+  mist,
+  dust,
+  tornado,
+  windy,
+  cloudy,
+};
+
+
+//* normalizing the condition
+const normalizeWeatherCondition = (desc: string): string => {
+  const d = desc.toLowerCase();
+  if (d.includes("sun")) return "sunny";
+  if (d.includes("cloud")) return "cloudy";
+  if (d.includes("rain")) return "rainy";
+  if (d.includes("snow")) return "snowy";
+  if (d.includes("drizzle")) return "drizzle";
+  if (d.includes("thunderstorm")) return "thunderstorm";
+  if (d.includes("thunder")) return "thunder";
+  if (d.includes("mist")) return "mist";
+  if (d.includes("dust")) return "dust";
+  if (d.includes("tornado")) return "tornado";
+  if (d.includes("wind")) return "windy";
+  return "cloudy"; // default fallback
+};
+
+
+const currentCondition = currentWeather?.weather?.[0]?.description || '';
+const normalized = normalizeWeatherCondition(currentCondition);
+const backgroundImage = backgroundImageMap[normalized];
+
+
 
   // Get weather icon based on condition code
   const getWeatherIcon = (code: number, size: number = 24): React.JSX.Element => {
@@ -89,75 +109,53 @@ const WeatherDashboard: React.FC = () => {
     })}`;
   };
 
-  // Get user location
-  const getUserLocation = () => {
-    setLoading(true);
-    setError(null);
+  const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.openweathermap.org';
+  const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 
-    if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser');
-      setLoading(false);
-      return;
+  // Fetch weather data when city changes
+  useEffect(() => {
+    if (city && city.trim() !== '') {
+      setLoading(true);
+      setError(null);
+      fetchWeatherByCity(city);
     }
+  }, [city]);
 
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const { latitude, longitude } = position.coords;
-        fetchLocationName(latitude, longitude);
-        fetchWeatherData(latitude, longitude);
-      },
-      err => {
-        setError(`Error getting location: ${err.message}`);
-        setLoading(false);
-      },
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-    );
-  };
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
-const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
-
-  // Fetch location name from coordinates
-  const fetchLocationName = async (lat: number, lon: number) => {
+  // Fetch weather data by city name
+  const fetchWeatherByCity = async (cityName: string) => {
     try {
-      const response = await fetch(
-        `${BASE_URL}/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch location data');
-      }
-      
-      const data = await response.json();
-      
-      if (data && data.length > 0) {
-        setLocation({
-          name: data[0].name,
-          country: data[0].country,
-          lat,
-          lon
-        });
-      }
-    } catch (err) {
-      console.error('Error fetching location name:', err);
-      setError('Error fetching location data');
-    }
-  };
-
-  // fetch weather data
-  const fetchWeatherData = async (lat: number, lon: number) => {
-    try {
-      //  fetch current weather
+      // Fetch current weather first to get coordinates
       const currentResponse = await fetch(
-        `${BASE_URL}/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`
+        `${BASE_URL}/data/2.5/weather?q=${cityName}&appid=${API_KEY}&units=metric`
       );
       
       if (!currentResponse.ok) {
-        throw new Error('Failed to fetch current weather');
+        throw new Error(`Failed to fetch weather for ${cityName}`);
       }
       
-      const currentData = await currentResponse.ok ? await currentResponse.json() : null;
+      const currentData = await currentResponse.json();
       
+      setCurrentWeather(currentData);
+      setLocation({
+        name: currentData.name,
+        country: currentData.sys.country,
+        lat: currentData.coord.lat,
+        lon: currentData.coord.lon
+      });
+      
+      // Then fetch forecast with coordinates
+      await fetchWeatherForecast(currentData.coord.lat, currentData.coord.lon);
+      
+    } catch (err) {
+      console.error('Error fetching city weather:', err);
+      setError(`Could not find weather for "${cityName}". Please check the city name and try again.`);
+      setLoading(false);
+    }
+  };
+
+  // fetch weather forecast data
+  const fetchWeatherForecast = async (lat: number, lon: number) => {
+    try {
       // fetch 5-day forecast for hourly and weekly data
       const forecastResponse = await fetch(
         `${BASE_URL}/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`
@@ -169,10 +167,6 @@ const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
       
       const forecastData = await forecastResponse.json();
       
-      if (currentData) {
-        setCurrentWeather(currentData);
-      }
-      
       if (forecastData && forecastData.list) {
         processHourlyForecast(forecastData.list);
         processWeeklyForecast(forecastData.list);
@@ -180,15 +174,15 @@ const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
       
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching weather data:', err);
-      setError('Error fetching weather data');
+      console.error('Error fetching weather forecast:', err);
+      setError('Error fetching forecast data');
       setLoading(false);
     }
   };
 
   // hourly forecast data (every 3 hours)
   const processHourlyForecast = (forecastList: WeatherForecastItem[]) => {
-    // Get next 7 forecasts
+    // Get next 7 forecasts (approximately 21 hours)
     const next21Hours = forecastList.slice(0, 7);
     
     const processed: DailyForecast[] = next21Hours.map((item) => {
@@ -260,39 +254,50 @@ const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
     setWeeklyForecast(processedDays.slice(0, 7));
   };
 
-  // initialize component
-  useEffect(() => {
-    getUserLocation();
-  }, []);
-
-  // refresh weather data
+  // Handle refresh button click
   const handleRefresh = () => {
-    if (location) {
+    if (city) {
       setLoading(true);
-      fetchWeatherData(location.lat, location.lon);
-    } else {
-      getUserLocation();
+      setError(null);
+      fetchWeatherByCity(city);
     }
   };
 
+  // If no city and no error yet, show search prompt
+  if (!city && !error) {
+    return (
+      <div
+        className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat flex justify-center items-center p-4"
+        style={{ backgroundImage: `url(${backgroundImage})`  }}
+      >
+        <div className="w-full max-w-xl rounded-3xl border border-white border-opacity-30 bg-transparent backdrop-blur-md p-6 text-gray-900">
+          <div className="flex flex-col items-center justify-center py-12">
+            <Search size={48} className="mb-6 text-gray-700" />
+            <h2 className="text-2xl font-medium mb-2 text-center">Search for a city</h2>
+            <p className="text-center mb-4">
+              Use the search bar above to find weather information for any city.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
-    <>
-    <WeatherNavBar />
     <div
       className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat flex justify-center items-center p-4"
-      style={{ backgroundImage: `url(${cloudy})` }}
+      style={{ backgroundImage: `url(${backgroundImage})`  }}
     >
       <div className="w-full max-w-xl rounded-3xl border border-white border-opacity-30 bg-transparent backdrop-blur-md p-6 text-gray-900">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12">
             <Loader size={48} className="animate-spin mb-4" />
-            <p>Getting your weather data...</p>
+            <p>Getting city's weather data...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-red-500 mb-4">{error}</p>
+            <p className="text-red-600 text-lg font-mono mb-4">{error}</p>
             <button
-              onClick={getUserLocation}
+              onClick={() => fetchWeatherByCity('London')}
               className="px-4 py-2 bg-white bg-opacity-30 hover:bg-opacity-40 rounded-full"
             >
               Try Again
@@ -363,7 +368,7 @@ const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
                   onClick={handleRefresh} 
                   className="text-sm flex items-center bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded-full"
                 >
-                  <span>Refresh</span>
+                  <span><RefreshCw className='w-5 h-5 rounded-full' /></span>
                 </button>
               </div>
 
@@ -420,8 +425,7 @@ const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
         )}
       </div>
     </div>
-    </>
   );
 };
 
-export default WeatherDashboard;
+export default SearchWeatherDashboard;

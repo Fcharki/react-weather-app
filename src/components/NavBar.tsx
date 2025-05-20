@@ -13,16 +13,12 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
     if (searchQuery.trim() && onSearch) {
       onSearch(searchQuery);
     }
-    // If no onSearch prop is provided, fallback to console log
-    else if (searchQuery.trim()) {
-      console.log('Searching for city:', searchQuery);
-    }
   };
 
   return (
     <header className="fixed w-screen top-0 left-0 z-10 transition-all duration-300 bg-transparent dark:bg-gray-900/90 backdrop-blur-md py-3">
       <nav aria-label="Global" className="w-full flex items-center px-4 justify-between md:px-8">
-        {/* Logo section */}
+        {/* Logo */}
         <div className="flex-shrink-0">
           <a href="/" className="flex items-center gap-2 group">
             <img src={logo} className="w-24 h-24 md:w-12 md:h-12" alt="weather app logo" />
@@ -32,7 +28,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
           </a>
         </div>
         
-        {/* Search bar - visible on all screens */}
+        {/* Search bar */}
         <div className="flex-1 max-w-md mx-4 hidden md:block">
           <form onSubmit={handleSearch} className="relative">
             <input
