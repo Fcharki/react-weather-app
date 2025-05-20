@@ -6,6 +6,9 @@ import ErrorBanner from './components/ErrorBanner';
 import WeatherCard from './components/WeatherCard';
 import { fetchWeather } from './services/weather';
 import { type WeatherData } from './components/types/weatherDataTypes';
+// import WeatherDashboard from './components/Dashboard';
+import WeatherDashboard from './components/DefaultCityWeather';
+
 
 function App() {
   const [city, setCity] = useState('');
@@ -30,12 +33,17 @@ function App() {
   };
 
   return (
+    <>
     <div className="p-4 max-w-md mx-auto">
-      <SearchBar value={city} onChange={(e) => setCity(e.target.value)} onSubmit={handleSearch} />
+   
+
+      {/* <SearchBar value={city} onChange={(e) => setCity(e.target.value)} onSubmit={handleSearch} />
       {loading && <Loader />}
       {error && <ErrorBanner message={error} />}
-      {data && <WeatherCard data={data} />}
+      {data && <WeatherCard data={data} />} */}
+      <WeatherDashboard />
     </div>
+    </>
   );
 }
 
