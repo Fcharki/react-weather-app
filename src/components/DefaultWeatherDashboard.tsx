@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Cloud, Sun, CloudRain, CloudLightning, CloudFog, CloudDrizzle, Loader, RefreshCw
-} from 'lucide-react';
+import { Loader, RefreshCw } from 'lucide-react';
 import { type WeatherDashboardProps, type WeatherLocation, type WeatherForecastItem, type DailyForecast, type WeeklyForecastItem
 }                                                                                                from './types/weatherDataTypes';
 import { fetchWeatherByCoordinates as getWeatherData, fetchWeatherForecast as getForecastData } from '../services/weather.ts';
@@ -68,15 +66,11 @@ const normalized = normalizeWeatherCondition(currentCondition);
 const backgroundImage = backgroundImageMap[normalized];
 
   // icon logic
-  const getWeatherIcon = (code: number, size = 24): React.JSX.Element => {
-    if (code >= 200 && code < 300) return <CloudLightning size={size} />;
-    if (code >= 300 && code < 400) return <CloudDrizzle size={size} />;
-    if (code >= 500 && code < 600) return <CloudRain size={size} />;
-    if (code >= 600 && code < 700) return <CloudRain size={size} />;
-    if (code >= 700 && code < 800) return <CloudFog size={size} />;
-    if (code === 800) return <Sun size={size} />;
-    return <Cloud size={size} />;
-  };
+const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
+  const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+  return <img src={iconUrl} alt="weather icon" width={size} height={size} />;
+};
+
 
   const formatTemp = (temp: number): string => `${Math.round(temp)}°`;
   const formatTime = (ts: number): string => new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -123,49 +117,69 @@ const backgroundImage = backgroundImageMap[normalized];
     const next7 = forecastList.slice(0, 7).map((item, index) => ({
       time: index === 0 ? 'Now' : (item.dt_txt ? item.dt_txt.split(' ')[1].substring(0, 5) : formatTime(item.dt)),
       temp: formatTemp(item.main.temp),
-      icon: getWeatherIcon(item.weather[0].id, 20),
+      icon:  getWeatherIcon(item.weather[0].icon, 50),
       description: item.weather[0].description
+
     }));
     setHourlyForecast(next7);
+
   };
 
-  const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
-    const grouped: Record<string, WeatherForecastItem[]> = {};
-
-    forecastList.forEach(item => {
-      const key = new Date(item.dt * 1000).toISOString().split('T')[0];
-      grouped[key] = grouped[key] || [];
-      grouped[key].push(item);
+  // weekly forecast data
+const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
+  // group forecasts by day
+  const dailyForecasts: { [key: string]: WeatherForecastItem[] } = {};
+  
+  forecastList.forEach(item => {
+    const date = new Date(item.dt * 1000);
+    const dateKey = date.toISOString().split('T')[0];
+    
+    if (!dailyForecasts[dateKey]) {
+      dailyForecasts[dateKey] = [];
+    }
+    
+    dailyForecasts[dateKey].push(item);
+  });
+  
+  // get average for each day
+  const processedDays: WeeklyForecastItem[] = Object.keys(dailyForecasts).map(dateKey => {
+    const forecasts = dailyForecasts[dateKey];
+    const totalTemp = forecasts.reduce((sum, item) => sum + item.main.temp, 0);
+    const avgTemp = totalTemp / forecasts.length;
+    
+    // find most common weather condition
+    const weatherCounts: { [id: number]: number } = {};
+    forecasts.forEach(item => {
+      const id = item.weather[0].id;
+      weatherCounts[id] = (weatherCounts[id] || 0) + 1;
     });
-
-    const weekly: WeeklyForecastItem[] = Object.values(grouped).map(dayItems => {
-      const avgTemp = dayItems.reduce((acc, item) => acc + item.main.temp, 0) / dayItems.length;
-
-      const weatherCount: Record<number, number> = {};
-      dayItems.forEach(item => {
-        const id = item.weather[0].id;
-        weatherCount[id] = (weatherCount[id] || 0) + 1;
-      });
-
-      const [mostCommonIdStr] = Object.entries(weatherCount).reduce(
-        (a, b) => (b[1] > a[1] ? b : a),
-        ["0", 0] // Use string type for the key
-      );
-
-      const mostCommonId = Number(mostCommonIdStr);
-
-      const commonDesc = dayItems.find(f => f.weather[0].id === Number(mostCommonId))?.weather[0].description || '';
-
-      return {
-        day: formatDay(dayItems[0].dt),
-        temp: formatTemp(avgTemp),
-        icon: getWeatherIcon(Number(mostCommonId), 24),
-        description: commonDesc
-      };
+    
+    let mostCommonWeatherId = forecasts[0].weather[0].id;
+    let highestCount = 0;
+    
+    Object.entries(weatherCounts).forEach(([id, count]) => {
+      if (count > highestCount) {
+        highestCount = count;
+        mostCommonWeatherId = parseInt(id);
+      }
     });
-
-    setWeeklyForecast(weekly.slice(0, 7));
-  };
+    
+    // Find the forecast with the most common weather ID to get its icon
+    const representativeForecast = forecasts.find(f => f.weather[0].id === mostCommonWeatherId);
+    const iconCode = representativeForecast?.weather[0].icon || forecasts[0].weather[0].icon;
+    const description = representativeForecast?.weather[0].description || forecasts[0].weather[0].description;
+    
+    return {
+      day: formatDay(forecasts[0].dt),
+      temp: formatTemp(avgTemp),
+      icon: getWeatherIcon(iconCode, 50),
+      description
+    };
+  });
+  
+  // limit to 7 days
+  setWeeklyForecast(processedDays.slice(0, 7));
+};
 
   const handleRefresh = () => {
     if (coordinates) fetchData(coordinates.latitude, coordinates.longitude);
@@ -213,21 +227,21 @@ const backgroundImage = backgroundImageMap[normalized];
               <div className="flex items-baseline">
                 <h1 className="text-7xl font-light">{currentWeather ? formatTemp(currentWeather.main.temp) : '-'}</h1>
                 <div className="ml-4">
-                  <h2 className="text-3xl font-medium">{location?.name || 'Unknown'}</h2>
+                  <h2 className="text-3xl font-medium ">{location?.name || 'Unknown'}</h2>
                   <p className="text-lg text-gray-700">{location?.country || ''}</p>
                 </div>
               </div>
               <div className="mt-4 flex items-center text-sm text-gray-700">
-                <span>{getCurrentDateTime()}</span>
+                <span className='font-medium'>{getCurrentDateTime()}</span>
                 {currentWeather && (
                   <>
-                    <span className="ml-2 mr-1">{getWeatherIcon(currentWeather.weather[0].id, 18)}</span>
-                    <span className="capitalize">{currentWeather.weather[0].description}</span>
+                    <span className="ml-2 mr-1">{getWeatherIcon(currentWeather.weather[0].icon, 18)}</span>
+                    <span className="capitalize font-semibold">{currentWeather.weather[0].description}</span>
                   </>
                 )}
               </div>
               {currentWeather && (
-                <div className="mt-2 text-sm text-gray-700">
+                <div className="mt-2 text-sm text-gray-700 font-medium">
                   Humidity: {currentWeather.main.humidity}% • Feels like: {formatTemp(currentWeather.main.feels_like)}
                 </div>
               )}
@@ -247,21 +261,28 @@ const backgroundImage = backgroundImageMap[normalized];
 
               {activeTab === 'day' ? (
                 hourlyForecast.length ? (
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-gray-600">{hourlyForecast.map((f, i) => <div key={i}>{f.icon}</div>)}</div>
-                    <div className="flex justify-between font-medium">{hourlyForecast.map((f, i) => <div key={i}>{f.temp}</div>)}</div>
-                    <div className="flex justify-between text-xs text-gray-600">{hourlyForecast.map((f, i) => <div key={i}>{f.time}</div>)}</div>
-                  </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+                  {hourlyForecast.map((f, i) => (
+                    <div key={i} className="bg-gray-200 hover:bg-yellow-200 p-4 rounded-lg text-center">
+                      <div className="mb-2 text-gray-600">{f.icon}</div>
+                      <div className="font-medium text-black">{f.temp}</div>
+                      <div className="text-sm text-gray-600">{f.time}</div>
+                    </div>
+                  ))}
+                </div>
+
                 ) : (
                   <p className="text-center py-4">No hourly forecast available</p>
                 )
-              ) : weeklyForecast.length ? (
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
-                  {weeklyForecast.map((day, i) => (
-                    <div key={i} className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-3 flex flex-col items-center">
-                      <div className="text-lg sm:text-2xl">{day.day}</div>
-                      <div className="my-2">{day.icon}</div>
-                      <div className="text-xl font-medium">{day.temp}</div>
+              ) : weeklyForecast.length > 0 ? (
+                <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-4 md:grid-cols-7 sm:gap-3">
+                  {weeklyForecast.map((day, index) => (
+                    <div key={index} className="flex justify-center">
+                      <div className="bg-gray-200 hover:bg-yellow-200 bg-opacity-20 backdrop-blur-sm rounded-lg p-3 flex flex-row sm:flex-col items-center justify-between sm:justify-center w-full">
+                        <div className="text-lg font-medium sm:text-2xl md:text-3xl sm:font-light">{day.day}</div>
+                           <div className="my-2">{day.icon}</div>
+                        <div className="text-xl sm:text-2xl md:text-3xl font-medium">{day.temp}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
