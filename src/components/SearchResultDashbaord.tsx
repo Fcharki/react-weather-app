@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Cloud, Sun, CloudRain, CloudLightning, CloudFog, CloudDrizzle, Loader, Search, RefreshCw } from 'lucide-react';
+import { Loader, Search, RefreshCw } from 'lucide-react';
 import { type WeatherLocation, type WeatherForecastItem, type DailyForecast, type WeeklyForecastItem 
                                                                  } from './types/weatherDataTypes';
 
@@ -29,7 +29,6 @@ const SearchWeatherDashboard: React.FC<SearchWeatherDashboardProps> = ({ city, l
   const [currentWeather, setCurrentWeather] = useState<WeatherForecastItem | null>(null);
   const [hourlyForecast, setHourlyForecast] = useState<DailyForecast[]>([]);
   const [weeklyForecast, setWeeklyForecast] = useState<WeeklyForecastItem[]>([]);
-
 
 
   //* background image map
@@ -281,7 +280,7 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
   }
   return (
     <div
-      className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat flex justify-center items-center p-4"
+      className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat flex justify-center items-center p-4 mt-10"
       style={{ backgroundImage: `url(${backgroundImage})`  }}
     >
       <div className="w-full max-w-xl rounded-3xl border border-white border-opacity-30 bg-transparent backdrop-blur-md p-6 text-gray-900">
@@ -293,12 +292,6 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-12">
             <p className="text-red-600 text-lg font-mono mb-4">{error}</p>
-            <button
-              onClick={() => fetchWeatherByCity('London')}
-              className="px-4 py-2 bg-white bg-opacity-30 hover:bg-opacity-40 rounded-full"
-            >
-              Try Again
-            </button>
           </div>
         ) : (
           <>
@@ -324,30 +317,44 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
               </div>
             </div>
 
-          {/* Current Weather */}
-            <div className="px-4 mb-8">
-              <div className="flex items-baseline">
-                <h1 className="text-7xl font-light">{currentWeather ? formatTemp(currentWeather.main.temp) : '-'}</h1>
-                <div className="ml-4">
-                  <h2 className="text-3xl font-medium">{location?.name || 'Unknown'}</h2>
-                  <p className="text-lg text-gray-700">{location?.country || ''}</p>
+      {/* Current Weather */}
+          <div className="px-4 mb-8">
+            <div className="bg-white rounded-2xl shadow-md p-6">
+              {/* Temperature and Location */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <h1 className="text-7xl font-light">{currentWeather ? formatTemp(currentWeather.main.temp) : '-'}</h1>
+                  {currentWeather && (
+                    <span className="ml-4 text-5xl">
+                      {getWeatherIcon(currentWeather.weather[0].icon, 48)}
+                    </span>
+                  )}
+                </div>
+                <div className="text-right">
+                  <h2 className="text-2xl font-semibold">{location?.name || 'Unknown'}</h2>
+                  <p className="text-base text-gray-600">{location?.country || ''}</p>
+                  <p className="text-sm text-gray-500 mt-1">{getCurrentDateTime()}</p>
                 </div>
               </div>
-              <div className="mt-4 flex items-center text-sm text-gray-700">
-                <span className='font-medium'>{getCurrentDateTime()}</span>
-                {currentWeather && (
-                  <>
-                    <span className="ml-2 mr-1">{getWeatherIcon(currentWeather.weather[0].icon, 18)}</span>
-                    <span className="capitalize font-semibold">{currentWeather.weather[0].description}</span>
-                  </>
-                )}
-              </div>
+
+              {/* Description and Sun Times */}
+              {currentWeather && currentWeather?.sys && (
+                <div className="mt-6 flex flex-wrap items-center gap-4 text-gray-700 text-sm">
+                  <span className="capitalize font-medium">{currentWeather.weather[0].description}</span>
+                  <span className="font-semibold">Sunrise: {formatTime(currentWeather.sys.sunrise)} AM</span>
+                  <span className="font-semibold">Sunset: {formatTime(currentWeather.sys.sunset)} PM</span>
+                </div>
+              )}
+
+              {/* Extra Info */}
               {currentWeather && (
-                <div className="mt-2 text-sm text-gray-700 font-medium">
-                  Humidity: {currentWeather.main.humidity}% • Feels like: {formatTemp(currentWeather.main.feels_like)}
+                <div className="mt-4 text-sm text-gray-600 font-medium">
+                  Humidity: {currentWeather.main.humidity}% &bull; Feels like: {formatTemp(currentWeather.main.feels_like)}
                 </div>
               )}
             </div>
+          </div>
+
 
             {/* Forecast */}
             <div className="bg-white bg-opacity-30 rounded-xl p-4 w-full">

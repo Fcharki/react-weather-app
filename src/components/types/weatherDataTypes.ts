@@ -1,4 +1,3 @@
-//TODO :  ORGANIZE CODE HERE ..............................................................
 
 //* TYPES
 // types for weather data
@@ -14,7 +13,13 @@ export type WeatherForecastItem = {
   main: {
     temp: number;
     feels_like: number;
+    sunrise:string,
+    sunset:string,
     humidity: number;
+  };
+    sys?: {
+    sunrise: number;
+    sunset: number;
   };
   weather: Array<{
     id: number;
@@ -47,7 +52,4 @@ export type WeatherDashboardProps = {
   isLoading?: boolean;
 }
 
-//* FUCNTIONS AS SERVICES 
 
-
-//* ETC ....

@@ -4,9 +4,13 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { Dialog, Disclosure } from '@headlessui/react';
 import logo from '../assets/images/sun-logo.png';
 
+
+
 const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSearch }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [debounceTimer, setDebounceTimer] = useState<number | null>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,6 +18,17 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
       onSearch(searchQuery);
     }
   };
+
+  const fetchSuggestions = async (query: string) => {
+    const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.openweathermap.org';
+    const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
+    if (!query.trim()) return;
+    const response = await fetch(
+      `${BASE_URL}/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=5&appid=${API_KEY}`
+    );
+    const data = await response.json();
+    setSuggestions(data);
+  }
 
   return (
     <header className="fixed w-screen top-0 left-0 z-10 transition-all duration-300 bg-transparent dark:bg-gray-900/90 backdrop-blur-md py-3">
@@ -35,11 +50,39 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
               type="text"
               placeholder="Search for a city..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                            const value = e.target.value;
+                            setSearchQuery(value);
+
+                            if (debounceTimer) clearTimeout(debounceTimer);
+
+                            const timer = setTimeout(() => fetchSuggestions(value), 400);
+                            setDebounceTimer(timer);
+                      }}
+              onBlur={() => setTimeout(() => setSuggestions([]), 150)}  
+              // clean up suggestions on submit or blur
               className="w-full py-2 pl-4 pr-10 rounded-full border border-gray-300 dark:border-gray-600 
                          bg-white dark:bg-gray-800 text-gray-900 dark:text-white 
                          focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            {suggestions.length > 0 && (
+              <ul className="absolute rounded-4xl border border-gray-200 border-opacity-30 z-20 mt-1 w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {suggestions.map((city, index) => (
+                  <li
+                    key={`${city.name}-${index}`}
+                    onClick={() => {
+                      setSearchQuery(`${city.name}, ${city.country}`);
+                      setSuggestions([]);
+                      onSearch?.(`${city.name},${city.country}`);
+                    }}
+                    className="px-4 py-2 cursor-pointer hover:bg-blue-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200"
+                  >
+                    {city.name}, {city.state ? `${city.state}, ` : ''}{city.country}
+                  </li>
+                ))}
+              </ul>
+            )}
+
             <button 
               type="submit"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-blue-600"

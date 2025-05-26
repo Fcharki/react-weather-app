@@ -222,30 +222,43 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
               </div>
             </div>
 
-            {/* Current Weather */}
-            <div className="px-4 mb-8">
-              <div className="flex items-baseline">
-                <h1 className="text-7xl font-light">{currentWeather ? formatTemp(currentWeather.main.temp) : '-'}</h1>
-                <div className="ml-4">
-                  <h2 className="text-3xl font-medium ">{location?.name || 'Unknown'}</h2>
-                  <p className="text-lg text-gray-700">{location?.country || ''}</p>
+       {/* Current Weather */}
+          <div className="px-4 mb-8">
+            <div className="bg-white rounded-2xl shadow-md p-6">
+              {/* Temperature and Location */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <h1 className="text-7xl font-light">{currentWeather ? formatTemp(currentWeather.main.temp) : '-'}</h1>
+                  {currentWeather && (
+                    <span className="ml-4 text-5xl">
+                      {getWeatherIcon(currentWeather.weather[0].icon, 48)}
+                    </span>
+                  )}
+                </div>
+                <div className="text-right">
+                  <h2 className="text-2xl font-semibold">{location?.name || '-'}</h2>
+                  <p className="text-base text-gray-600">{location?.country || ''}</p>
+                  <p className="text-sm text-gray-500 mt-1">{getCurrentDateTime()}</p>
                 </div>
               </div>
-              <div className="mt-4 flex items-center text-sm text-gray-700">
-                <span className='font-medium'>{getCurrentDateTime()}</span>
-                {currentWeather && (
-                  <>
-                    <span className="ml-2 mr-1">{getWeatherIcon(currentWeather.weather[0].icon, 18)}</span>
-                    <span className="capitalize font-semibold">{currentWeather.weather[0].description}</span>
-                  </>
-                )}
-              </div>
+
+              {/* Description and Sun Times */}
+              {currentWeather && currentWeather?.sys && (
+                <div className="mt-6 flex flex-wrap items-center gap-4 text-gray-700 text-sm">
+                  <span className="capitalize font-medium">{currentWeather.weather[0].description}</span>
+                  <span className="font-semibold">Sunrise: {formatTime(currentWeather.sys.sunrise)} AM</span>
+                  <span className="font-semibold">Sunset: {formatTime(currentWeather.sys.sunset)} PM</span>
+                </div>
+              )}
+
+              {/* Extra Info */}
               {currentWeather && (
-                <div className="mt-2 text-sm text-gray-700 font-medium">
-                  Humidity: {currentWeather.main.humidity}% • Feels like: {formatTemp(currentWeather.main.feels_like)}
+                <div className="mt-4 text-sm text-gray-600 font-medium">
+                  Humidity: {currentWeather.main.humidity}% &bull; Feels like: {formatTemp(currentWeather.main.feels_like)}
                 </div>
               )}
             </div>
+          </div>
 
             {/* Forecast */}
             <div className="bg-white bg-opacity-30 rounded-xl p-4">
