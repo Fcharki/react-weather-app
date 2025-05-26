@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Loader, Search, RefreshCw } from 'lucide-react';
 import { type WeatherLocation, type WeatherForecastItem, type DailyForecast, type WeeklyForecastItem 
                                                                  } from './types/weatherDataTypes';
+                                                                 
 
 //* background images 
 import cloudy from '../assets/images/clouds.jpg';
@@ -29,6 +30,7 @@ const SearchWeatherDashboard: React.FC<SearchWeatherDashboardProps> = ({ city, l
   const [currentWeather, setCurrentWeather] = useState<WeatherForecastItem | null>(null);
   const [hourlyForecast, setHourlyForecast] = useState<DailyForecast[]>([]);
   const [weeklyForecast, setWeeklyForecast] = useState<WeeklyForecastItem[]>([]);
+  const [timezoneOffset, setTimezoneOffset] = useState<number>(0); // Store timezone offset separately
 
 
   //* background image map
@@ -93,15 +95,32 @@ const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
     return date.toLocaleDateString([], { weekday: 'short' });
   };
 
-  const getCurrentDateTime = (): string => {
-    const now = new Date();
-    return `${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${now.toLocaleDateString([], {
+
+  const getCurrentDateTime = (timezoneOffsetSeconds: number): string => {
+    // Get current UTC timestamp in seconds
+    const utcTimestamp = Math.floor(Date.now() / 1000);
+
+    // Apply timezone offset (API returns offset in seconds from UTC)
+    const localTimestamp = (utcTimestamp + timezoneOffsetSeconds) * 1000; // Convert to ms
+    const localDate = new Date(localTimestamp);
+
+    const time = localDate.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const date = localDate.toLocaleDateString([], {
       weekday: 'long',
       day: 'numeric',
       month: 'short',
-      year: '2-digit'
-    })}`;
+      year: '2-digit',
+    });
+
+    return `${time} - ${date}`;
   };
+
+
+
 
   const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.openweathermap.org';
   const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
@@ -130,6 +149,11 @@ const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
       const currentData = await currentResponse.json();
       
       setCurrentWeather(currentData);
+      
+      // Extract timezone offset from the API response
+      const timezoneOffsetFromAPI = currentData.timezone || 0; // timezone is in seconds
+      setTimezoneOffset(timezoneOffsetFromAPI);
+      
       setLocation({
         name: currentData.name,
         country: currentData.sys.country,
@@ -183,7 +207,7 @@ const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
       return {
         time: item.dt_txt ? item.dt_txt.split(' ')[1].substring(0, 5) : formatTime(item.dt),
         temp: formatTemp(item.main.temp),
-        icon: getWeatherIcon(item.weather[0].icon, 50),
+        icon: getWeatherIcon(item.weather[0].icon, 100),
         description: item.weather[0].description
       };
     });
@@ -326,14 +350,16 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
                   <h1 className="text-7xl font-light">{currentWeather ? formatTemp(currentWeather.main.temp) : '-'}</h1>
                   {currentWeather && (
                     <span className="ml-4 text-5xl">
-                      {getWeatherIcon(currentWeather.weather[0].icon, 48)}
+                      {getWeatherIcon(currentWeather.weather[0].icon, 50)}
                     </span>
                   )}
                 </div>
                 <div className="text-right">
-                  <h2 className="text-2xl font-semibold">{location?.name || 'Unknown'}</h2>
+                  <h2 className="text-2xl font-semibold">{location?.name || '-'}</h2>
                   <p className="text-base text-gray-600">{location?.country || ''}</p>
-                  <p className="text-sm text-gray-500 mt-1">{getCurrentDateTime()}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {getCurrentDateTime(timezoneOffset)}
+                  </p>
                 </div>
               </div>
 
