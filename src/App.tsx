@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import WeatherNavBar from './components/NavBar';
 import WeatherDashboard from './components/DefaultWeatherDashboard';
 import SearchWeatherDashboard from './components/SearchResultDashbaord';
+import './App.css';
 
 interface Coordinates {
   latitude: number;
@@ -70,7 +71,7 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 parent">
       <WeatherNavBar onSearch={handleSearch} />
       <div className="pt-32"> 
         {renderWeatherComponent()}
