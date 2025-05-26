@@ -53,3 +53,9 @@ export type WeatherDashboardProps = {
 }
 
 
+export type Suggestion = {
+  name: string;
+  country: string;
+  [key: string]: any;
+};
+

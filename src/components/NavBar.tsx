@@ -1,23 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { Dialog, Disclosure } from '@headlessui/react';
 import logo from '../assets/images/sun-logo.png';
+import { type Suggestion } from './types/weatherDataTypes';
 
 
 
 const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSearch }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState<number | null>(null);
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [showSearchHistory, setShowSearchHistory] = useState(false);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim() && onSearch) {
-      onSearch(searchQuery);
-    }
-  };
+   const containerRef = useRef<HTMLDivElement>(null);
+
+     // hide history dropdown on outside click
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+          if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+            setShowSearchHistory(false);
+          }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+      }, []);
+
+
+    // load history on mount
+    useEffect(() => {
+      const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      setSearchHistory(history);
+    }, []);
+
+    // save a new search
+    const addToSearchHistory = (city: string) => {
+      setSearchHistory((prev) => {
+        const updated = [city, ...prev.filter((c) => c.toLowerCase() !== city.toLowerCase())].slice(0, 5);
+        localStorage.setItem('searchHistory', JSON.stringify(updated));
+        return updated;
+      });
+    };
+
+    const handleSearch = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (searchQuery.trim() && onSearch) {
+        onSearch(searchQuery);
+        addToSearchHistory(searchQuery.trim());
+        setShowDropdown(false);
+      }
+    };
+
 
   const fetchSuggestions = async (query: string) => {
     const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.openweathermap.org';
@@ -44,44 +81,84 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
         </div>
         
         {/* Search bar */}
-        <div className="flex-1 max-w-md mx-4 hidden md:block">
+        <div className="flex-1 max-w-md mx-4 hidden md:block" ref={containerRef} >
           <form onSubmit={handleSearch} className="relative">
             <input
               type="text"
               placeholder="Search for a city..."
               value={searchQuery}
               onChange={(e) => {
-                            const value = e.target.value;
-                            setSearchQuery(value);
+                    const value = e.target.value;
+                    setSearchQuery(value);
+                    setShowDropdown(true);
 
-                            if (debounceTimer) clearTimeout(debounceTimer);
+                    if (debounceTimer) clearTimeout(debounceTimer);
+                    const timer = setTimeout(() => fetchSuggestions(value), 400);
+                    setDebounceTimer(timer);
 
-                            const timer = setTimeout(() => fetchSuggestions(value), 400);
-                            setDebounceTimer(timer);
-                      }}
-              onBlur={() => setTimeout(() => setSuggestions([]), 150)}  
+                    // Hide history when typing
+                    setShowSearchHistory(false);
+                  }}
+
               // clean up suggestions on submit or blur
+              onBlur={() => {
+                        setTimeout(() => {
+                          setShowDropdown(false);
+                          setShowSearchHistory(false);
+                        }, 150);
+                      }
+                    }
+
+              onFocus={() => {
+                                if (searchQuery.trim() === '') {
+                                  setShowSearchHistory(true);
+                                  setShowDropdown(true);
+                                }
+                              }}
+
               className="w-full py-2 pl-4 pr-10 rounded-full border border-gray-300 dark:border-gray-600 
                          bg-white dark:bg-gray-800 text-gray-900 dark:text-white 
                          focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {suggestions.length > 0 && (
-              <ul className="absolute rounded-4xl border border-gray-200 border-opacity-30 z-20 mt-1 w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                {suggestions.map((city, index) => (
+          {showDropdown && (
+            <ul className="absolute rounded-xl left-0 right-0 z-50 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 mt-1 shadow-lg max-h-60 overflow-y-auto">
+              {showSearchHistory && searchQuery.trim() === '' ? (
+                searchHistory.map((city, i) => (
                   <li
-                    key={`${city.name}-${index}`}
+                    key={`history-${i}`}
                     onClick={() => {
-                      setSearchQuery(`${city.name}, ${city.country}`);
-                      setSuggestions([]);
-                      onSearch?.(`${city.name},${city.country}`);
+                      setSearchQuery(city);
+                      setShowDropdown(false);
+                      onSearch?.(city);
+                      setShowSearchHistory(false);
                     }}
-                    className="px-4 py-2 cursor-pointer hover:bg-blue-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200"
+                    className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
-                    {city.name}, {city.state ? `${city.state}, ` : ''}{city.country}
+                    {city}
                   </li>
-                ))}
-              </ul>
-            )}
+                ))
+              ) : (
+                suggestions.map((sugg, i) => {
+                  const fullName = `${sugg.name}, ${sugg.country}`;
+                  return (
+                    <li
+                      key={`sugg-${i}`}
+                      onClick={() => {
+                        setSearchQuery(fullName);
+                        setShowDropdown(false);
+                        onSearch?.(fullName);
+                        addToSearchHistory(fullName);
+                        setShowSearchHistory(false);
+                      }}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      {fullName}
+                    </li>
+                  );
+                })
+              )}
+            </ul>
+)}
 
             <button 
               type="submit"
@@ -105,7 +182,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
         </div>
         
         {/* Desktop navigation links */}
-        <div className="hidden lg:flex lg:gap-x-8 items-center font-[Figtree]">
+        <div className="hidden lg:flex lg:gap-x-8 items-center">
           <a 
             href="/" 
             className="text-base font-mono font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-300 relative group py-2"
@@ -226,7 +303,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
           
           <div className="mt-6 flow-root">
             <div className="-my-6 divide-y divide-gray-500/10 dark:divide-gray-700">
-              <div className="space-y-1 py-6 font-[Figtree]">
+              <div className="space-y-1 py-6">
                 <a
                   href="/"
                   className="block rounded-lg font-mono px-3 py-2 text-base font-medium text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800"
