@@ -34,6 +34,9 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
     // load history on mount
     useEffect(() => {
       const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      if (history.lenght == 0) {
+         setShowSearchHistory(false);
+      }
       setSearchHistory(history);
     }, []);
 
@@ -75,7 +78,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
           <a href="/" className="flex items-center gap-2 group">
             <img src={logo} className="w-24 h-24 md:w-12 md:h-12" alt="weather app logo" />
             <span className="text-lg md:text-xl font-bold text-blue-700 dark:text-blue-400 hidden sm:block">
-             SkySnap
+             SkySnapping 
             </span>
           </a>
         </div>
@@ -267,7 +270,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
             <a href="/" className="flex items-center gap-2">
                   <img src={logo} className="w-12 h-12 md:w-12 md:h-12" alt="weather app logo" />
                     <span className="text-lg md:text-xl font-bold text-blue-700 dark:text-blue-400 hidden sm:block">
-                    SkySnap
+                    SkySnapping 
                     </span>
                 </a>
             <button
