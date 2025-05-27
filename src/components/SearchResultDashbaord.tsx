@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader, Search, RefreshCw } from 'lucide-react';
+import { Loader, Search, RefreshCw, Sunrise, Sunset, Droplet, Thermometer, MapPin } from 'lucide-react';
 import { type WeatherLocation, type WeatherForecastItem, type DailyForecast, type WeeklyForecastItem 
                                                                  } from './types/weatherDataTypes';
                                                                  
@@ -353,7 +353,9 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
               {/* Temperature and Location */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <h1 className="text-7xl font-light">{currentWeather ? formatTemp(currentWeather.main.temp) : '-'}</h1>
+                  <h1 className="text-7xl font-light">
+                    {currentWeather ? formatTemp(currentWeather.main.temp) : '-'}
+                  </h1>
                   {currentWeather && (
                     <span className="ml-4 text-5xl">
                       {getWeatherIcon(currentWeather.weather[0].icon, 50)}
@@ -361,7 +363,12 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
                   )}
                 </div>
                 <div className="text-right">
-                  <h2 className="text-2xl font-semibold">{location?.name || '-'}</h2>
+                  <div className="flex items-center justify-end gap-2">
+                    <MapPin className="w-6 h-6 text-gray-700" />
+                    <h2 className="text-2xl font-semibold">
+                      {location?.name || '-'}
+                    </h2>
+                  </div>
                   <p className="text-base text-gray-600">{location?.country || ''}</p>
                   <p className="text-sm text-gray-500 mt-1">
                     {getCurrentDateTime(timezoneOffset)}
@@ -370,22 +377,38 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
               </div>
 
               {/* Description and Sun Times */}
-              {currentWeather && currentWeather?.sys && (
+              {currentWeather?.sys && (
                 <div className="mt-6 flex flex-wrap items-center gap-4 text-gray-700 text-sm">
-                  <span className="capitalize font-medium">{currentWeather.weather[0].description}</span>
-                  <span className="font-semibold">Sunrise: {formatTime(currentWeather.sys.sunrise)}</span>
-                  <span className="font-semibold">Sunset: {formatTime(currentWeather.sys.sunset)}</span>
+                  <span className="capitalize font-medium">
+                    {currentWeather.weather[0].description}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Sunrise className="w-4 h-4 text-orange-400" />
+                    <span className="font-semibold">Sunrise: {formatTime(currentWeather.sys.sunrise)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Sunset className="w-4 h-4 text-blue-800" />
+                    <span className="font-semibold">Sunset: {formatTime(currentWeather.sys.sunset)}</span>
+                  </div>
                 </div>
               )}
 
               {/* Extra Info */}
               {currentWeather && (
-                <div className="mt-4 text-sm text-gray-600 font-medium">
-                  Humidity: {currentWeather.main.humidity}% &bull; Feels like: {formatTemp(currentWeather.main.feels_like)}
+                <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-600 font-medium">
+                  <div className="flex items-center gap-1">
+                    <Droplet className="w-4 h-4 text-blue-600" />
+                    <span>Humidity: {currentWeather.main.humidity}%</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Thermometer className="w-4 h-4 text-orange-400" />
+                    <span>Feels like: {formatTemp(currentWeather.main.feels_like)}</span>
+                  </div>
                 </div>
               )}
             </div>
           </div>
+
 
             {/* Forecast */}
             <div className="bg-white bg-opacity-30 rounded-xl p-4 w-full">
@@ -405,7 +428,7 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
                 hourlyForecast.length > 0 ? (
                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
                   {hourlyForecast.map((f, i) => (
-                    <div key={i} className="bg-gray-200 hover:bg-yellow-200 p-4 rounded-lg text-center">
+                    <div key={i} className="bg-gray-100 hover:bg-yellow-200 p-4 rounded-lg text-center">
                       <div className="mb-2 text-gray-600">{f.icon}</div>
                       <div className="font-medium text-black">{f.temp}</div>
                       <div className="text-sm text-gray-600">{f.time}</div>
@@ -421,9 +444,9 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
                   {weeklyForecast.map((day, index) => (
                     <div key={index} className="flex justify-center">
                       <div className="bg-gray-50 bg-opacity-20 backdrop-blur-sm rounded-lg p-3 flex flex-row sm:flex-col items-center justify-between sm:justify-center w-full">
-                        <div className="text-lg font-medium sm:text-2xl md:text-3xl sm:font-light">{day.day}</div>
+                        <div className="text-lg sm:text-xl md:text-2xl font-medium">{day.day}</div>
                            <div className="my-2">{day.icon}</div>
-                        <div className="text-xl sm:text-2xl md:text-3xl font-medium">{day.temp}</div>
+                        <div className="text-lg font-medium sm:text-xl md:text-2xl">{day.temp}</div>
                       </div>
                     </div>
                   ))}
