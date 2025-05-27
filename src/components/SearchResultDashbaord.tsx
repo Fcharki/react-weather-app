@@ -86,13 +86,18 @@ const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
 
   // Format date/time
   const formatTime = (timestamp: number): string => {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const localTimestamp = (timestamp + timezoneOffset) * 1000; // apply offset, convert to ms
+    const date = new Date(localTimestamp);
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
   };
 
   const formatDay = (timestamp: number): string => {
     const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString([], { weekday: 'short' });
+    return date.toLocaleDateString('en-US', { weekday: 'short' });
   };
 
 
@@ -104,12 +109,13 @@ const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
     const localTimestamp = (utcTimestamp + timezoneOffsetSeconds) * 1000; // Convert to ms
     const localDate = new Date(localTimestamp);
 
-    const time = localDate.toLocaleTimeString([], {
+    const time = localDate.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
+      hour12: true, 
     });
 
-    const date = localDate.toLocaleDateString([], {
+    const date = localDate.toLocaleDateString('en-US', {
       weekday: 'long',
       day: 'numeric',
       month: 'short',
@@ -287,7 +293,7 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
   if (!city && !error) {
     return (
       <div
-        className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat flex justify-center items-center p-4"
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat flex justify-center items-center p-4"
         style={{ backgroundImage: `url(${backgroundImage})`  }}
       >
         <div className="w-full max-w-xl rounded-3xl border border-white border-opacity-30 bg-transparent backdrop-blur-md p-6 text-gray-900">
@@ -367,8 +373,8 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
               {currentWeather && currentWeather?.sys && (
                 <div className="mt-6 flex flex-wrap items-center gap-4 text-gray-700 text-sm">
                   <span className="capitalize font-medium">{currentWeather.weather[0].description}</span>
-                  <span className="font-semibold">Sunrise: {formatTime(currentWeather.sys.sunrise)} AM</span>
-                  <span className="font-semibold">Sunset: {formatTime(currentWeather.sys.sunset)} PM</span>
+                  <span className="font-semibold">Sunrise: {formatTime(currentWeather.sys.sunrise)}</span>
+                  <span className="font-semibold">Sunset: {formatTime(currentWeather.sys.sunset)}</span>
                 </div>
               )}
 
@@ -381,18 +387,17 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
             </div>
           </div>
 
-
             {/* Forecast */}
             <div className="bg-white bg-opacity-30 rounded-xl p-4 w-full">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium">
                   {activeTab === 'day' ? '24-hour forecast' : '7-day forecast'}
                 </h3>
-                <button 
-                  onClick={handleRefresh} 
-                  className="text-sm flex items-center bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded-full"
-                >
-                  <span><RefreshCw className='w-5 h-5 rounded-full' /></span>
+                 <button
+                    onClick={handleRefresh}
+                    className="text-sm bg-yellow-200 flex items-center bg-opacity-20 hover:bg-opacity-30 px-3 py-2 px-3 rounded-full"
+                    >
+                  Refresh <RefreshCw className='w-5 h-5 ml-2 rounded-full' />
                 </button>
               </div>
 
@@ -415,7 +420,7 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
                 <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-4 md:grid-cols-7 sm:gap-3">
                   {weeklyForecast.map((day, index) => (
                     <div key={index} className="flex justify-center">
-                      <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-3 flex flex-row sm:flex-col items-center justify-between sm:justify-center w-full">
+                      <div className="bg-gray-50 bg-opacity-20 backdrop-blur-sm rounded-lg p-3 flex flex-row sm:flex-col items-center justify-between sm:justify-center w-full">
                         <div className="text-lg font-medium sm:text-2xl md:text-3xl sm:font-light">{day.day}</div>
                            <div className="my-2">{day.icon}</div>
                         <div className="text-xl sm:text-2xl md:text-3xl font-medium">{day.temp}</div>

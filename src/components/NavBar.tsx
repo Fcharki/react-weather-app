@@ -71,7 +71,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
   }
 
   return (
-    <header className="fixed w-screen top-0 left-0 z-10 transition-all duration-300 bg-transparent dark:bg-gray-900/90 backdrop-blur-md py-3">
+    <header className="fixed w-screen top-0 left-0 z-10 transition-all duration-300 bg-white dark:bg-gray-900/90 backdrop-blur-md py-3">
       <nav aria-label="Global" className="w-full flex items-center px-4 justify-between md:px-8">
         {/* Logo */}
         <div className="flex-shrink-0">
@@ -201,10 +201,10 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
           </a>
           <a 
-            href="/maps" 
+             href="/about"
             className="text-base font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-300 relative group py-2"
           >
-            Weather Maps
+             About
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
           </a>
           
@@ -322,11 +322,11 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
                   Forecast
                 </a>
                 <a
-                  href="/maps"
+                  href="/about"
                   className="block rounded-lg px-3 py-2 text-base font-medium text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Weather Maps
+                  About
                 </a>
                 
                 <Disclosure as="div" className="-mx-3">

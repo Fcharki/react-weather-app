@@ -13,11 +13,11 @@ export type WeatherForecastItem = {
   main: {
     temp: number;
     feels_like: number;
-    sunrise:string,
-    sunset:string,
+    sunrise: string,
+    sunset: string,
     humidity: number;
   };
-    sys?: {
+  sys?: {
     sunrise: number;
     sunset: number;
   };

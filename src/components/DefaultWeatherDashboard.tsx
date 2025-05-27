@@ -73,11 +73,11 @@ const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
 
 
   const formatTemp = (temp: number): string => `${Math.round(temp)}°`;
-  const formatTime = (ts: number): string => new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const formatDay = (ts: number): string => new Date(ts * 1000).toLocaleDateString([], { weekday: 'short' });
+  const formatTime = (ts: number): string => new Date(ts * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, });
+  const formatDay = (ts: number): string => new Date(ts * 1000).toLocaleDateString('en-US', { weekday: 'short' });
   const getCurrentDateTime = (): string => {
     const now = new Date();
-    return `${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${now.toLocaleDateString([], {
+    return `${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true,  })} - ${now.toLocaleDateString('en-US', {
       weekday: 'long', day: 'numeric', month: 'short', year: '2-digit'
     })}`;
   };
@@ -246,8 +246,8 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
               {currentWeather && currentWeather?.sys && (
                 <div className="mt-6 flex flex-wrap items-center gap-4 text-gray-700 text-sm">
                   <span className="capitalize font-medium">{currentWeather.weather[0].description}</span>
-                  <span className="font-semibold">Sunrise: {formatTime(currentWeather.sys.sunrise)} AM</span>
-                  <span className="font-semibold">Sunset: {formatTime(currentWeather.sys.sunset)} PM</span>
+                  <span className="font-semibold">Sunrise: {formatTime(currentWeather.sys.sunrise)}</span>
+                  <span className="font-semibold">Sunset: {formatTime(currentWeather.sys.sunset)}</span>
                 </div>
               )}
 
@@ -266,9 +266,9 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
                 <h3 className="text-lg font-medium">{activeTab === 'day' ? '24-hour forecast' : '7-day forecast'}</h3>
                 <button
                   onClick={handleRefresh}
-                  className="text-sm flex items-center bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded-full"
+                  className="text-sm bg-yellow-200 flex items-center bg-opacity-20 hover:bg-opacity-30 px-3 py-2 px-3 rounded-full"
                 >
-                  <RefreshCw className='w-5 h-5 rounded-full' />
+                 Refresh <RefreshCw className='w-5 h-5 ml-2 rounded-full' />
                 </button>
               </div>
 
@@ -276,7 +276,7 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
                 hourlyForecast.length ? (
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
                   {hourlyForecast.map((f, i) => (
-                    <div key={i} className="bg-gray-200 hover:bg-yellow-200 p-4 rounded-lg text-center">
+                    <div key={i} className="bg-gray-100 hover:bg-yellow-200 p-4 rounded-lg text-center">
                       <div className="mb-2 text-gray-600">{f.icon}</div>
                       <div className="font-medium text-black">{f.temp}</div>
                       <div className="text-sm text-gray-600">{f.time}</div>
@@ -291,8 +291,8 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
                 <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-4 md:grid-cols-7 sm:gap-3">
                   {weeklyForecast.map((day, index) => (
                     <div key={index} className="flex justify-center">
-                      <div className="bg-gray-200 hover:bg-yellow-200 bg-opacity-20 backdrop-blur-sm rounded-lg p-3 flex flex-row sm:flex-col items-center justify-between sm:justify-center w-full">
-                        <div className="text-lg font-medium sm:text-2xl md:text-3xl sm:font-light">{day.day}</div>
+                      <div className="bg-gray-50 hover:bg-yellow-200 bg-opacity-20 backdrop-blur-sm rounded-lg p-3 flex flex-row sm:flex-col items-center justify-between sm:justify-center w-full">
+                        <div className="text-lg font-medium sm:text-xl md:text-3xl sm:font-light">{day.day}</div>
                            <div className="my-2">{day.icon}</div>
                         <div className="text-xl sm:text-2xl md:text-3xl font-medium">{day.temp}</div>
                       </div>

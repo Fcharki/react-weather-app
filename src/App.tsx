@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import WeatherNavBar from './components/NavBar';
 import WeatherDashboard from './components/DefaultWeatherDashboard';
 import SearchWeatherDashboard from './components/SearchResultDashbaord';
+import About from './components/About';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 
 interface Coordinates {
@@ -67,16 +69,22 @@ const App = () => {
     }
     
     // if there was an error getting location and no search,
-    return <SearchWeatherDashboard locationError={locationError} />;
+    return<SearchWeatherDashboard locationError={locationError} />;
   };
 
   return (
+    <Router>
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 parent">
       <WeatherNavBar onSearch={handleSearch} />
+      <Routes>
+        <Route path="about" element={<><About /></>} />
+      </Routes>
+      
       <div className="pt-32"> 
         {renderWeatherComponent()}
       </div>
     </div>
+    </Router>
   );
 };
 
