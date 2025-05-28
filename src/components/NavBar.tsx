@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { ChevronDownIcon } from '@heroicons/react/20/solid';
-import { Dialog, Disclosure } from '@headlessui/react';
+// import { ChevronDownIcon } from '@heroicons/react/20/solid'; //  to add when needed
+import { Dialog} from '@headlessui/react'; // Disclosure, to add when needed
 import logo from '../assets/images/sun-logo.png';
 import { type Suggestion } from './types/weatherDataTypes';
 
@@ -186,13 +186,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
         
         {/* Desktop navigation links */}
         <div className="hidden lg:flex lg:gap-x-8 items-center">
-          <a 
-            href="/" 
-            className="text-base font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-300 relative group py-2"
-          >
-            Home
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
-          </a>
+      
           {/* <a 
             href="/forecast" 
             className="text-base  font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-300 relative group py-2"
@@ -205,6 +199,13 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
             className="text-base font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-300 relative group py-2"
           >
              About
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
+          </a>
+          <a 
+            href="https://fadmacharki.netlify.app" 
+            className="text-base font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-300 relative group py-2"
+          >
+            Developer
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
           </a>
           
@@ -307,13 +308,6 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
           <div className="mt-6 flow-root">
             <div className="-my-6 divide-y divide-gray-500/10 dark:divide-gray-700">
               <div className="space-y-1 py-6">
-                <a
-                  href="/"
-                  className="block rounded-lg px-3 py-2 text-base font-medium text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Home
-                </a>
                 {/* <a
                   href="/forecast"
                   className="block rounded-lg  px-3 py-2 text-base font-medium text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -327,6 +321,13 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   About
+                </a>
+                   <a
+                  href="https://fadmacharki.netlify.app"
+                  className="block rounded-lg px-3 py-2 text-base font-medium text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Developer
                 </a>
                 
                 {/* <Disclosure as="div" className="-mx-3">
