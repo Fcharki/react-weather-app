@@ -203,6 +203,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
           </a>
           <a 
             href="https://fadmacharki.netlify.app" 
+            target='_blank'
             className="text-base font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-300 relative group py-2"
           >
             Developer
@@ -324,6 +325,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
                 </a>
                    <a
                   href="https://fadmacharki.netlify.app"
+                  target='_blank'
                   className="block rounded-lg px-3 py-2 text-base font-medium text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                   onClick={() => setMobileMenuOpen(false)}
                 >
