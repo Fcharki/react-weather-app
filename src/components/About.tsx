@@ -11,9 +11,9 @@ const About: React.FC = () => {
       />
 
       <div className="text-center max-w-md bg-white bg-opacity-50 backdrop-blur-sm rounded-2xl shadow-lg p-6">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-blue-900">SkySnapping</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-2 text-blue-900">SkySnapping</h1>
         <p className="text-gray-800 text-md sm:text-lg font-medium my-3">
-          SkySnapping is a minimalist, modern weather app designed to provide accurate daily and weekly forecasts with a clean and immersive UI. Stay updated with real-time weather updates adapted to your location.
+          <span className="text-yellow-400">SkySnapping </span>is a minimalist, modern weather app designed to provide accurate daily and weekly forecasts with a clean and immersive UI. Stay updated with real-time weather updates adapted to your location.
         </p>
       </div>
 

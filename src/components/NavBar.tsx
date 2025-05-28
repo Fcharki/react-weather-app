@@ -75,7 +75,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
       <nav aria-label="Global" className="w-full flex items-center px-4 justify-between md:px-8">
         {/* Logo */}
         <div className="flex-shrink-0">
-          <a href="/" className="flex items-center gap-2 group">
+          <a href="/" className="flex items-center gap-2 group" target='_self'>
             <img src={logo} className="w-24 h-24 md:w-12 md:h-12" alt="weather app logo" />
             <span className="text-lg md:text-xl font-bold text-blue-700 dark:text-blue-400 hidden sm:block">
              SkySnapping 

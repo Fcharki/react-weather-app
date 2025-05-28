@@ -309,46 +309,178 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
     );
   }
   return (
-    <div
-      className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat flex justify-center items-center p-4"
-      style={{ backgroundImage: `url(${backgroundImage})`  }}
-    >
-      <div className="w-full max-w-xl rounded-3xl border border-white border-opacity-30 bg-transparent backdrop-blur-md p-6 text-gray-900 mt-10">
+  <div
+    className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat flex justify-center items-center p-4"
+    style={{ backgroundImage: `url(${backgroundImage})` }}
+  >
+    {/* Mobile Design */}
+    <div className="block md:hidden w-full h-full">
+      <div className="h-full bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white overflow-y-auto">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader size={48} className="animate-spin mb-4" />
-            <p>Getting city's weather data...</p>
+          <div className="flex flex-col items-center justify-center h-full">
+            <Loader size={48} className="animate-spin mb-4 text-white" />
+            <p className="text-white">Getting city's weather data...</p>
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-red-600 text-lg font-mono mb-4">{error}</p>
+          <div className="flex flex-col items-center justify-center h-full">
+            <p className="text-red-400 text-lg font-mono mb-4">{error}</p>
           </div>
         ) : (
-          <>
+          <div className="px-6 py-8 space-y-6 mt-36">
+            {/* Location and Current Weather */}
+            <div className="text-center">
+              <h2 className="text-2xl mb-2">{location?.name || '-'}</h2>
+          <p className="text-sm opacity-80 mb-6">{location?.country || ''}</p>
+          
+          <div className="flex items-center justify-center mb-4">
+            {currentWeather && (
+              <span className="text-6xl mr-4">
+                {getWeatherIcon(currentWeather.weather[0].icon, 64)}
+              </span>
+            )}
+            <h1 className="text-6xl font-thin">
+              {currentWeather ? formatTemp(currentWeather.main.temp) : '-'}
+            </h1>
+          </div>
+          
+          {currentWeather && (
+            <p className="text-lg capitalize mb-6 opacity-90">
+              {currentWeather.weather[0].description}
+            </p>
+          )}
+            </div>
+
             {/* Tab Selector */}
-            <div className="flex justify-center mb-8 w-full">
-              <div className="bg-white bg-opacity-30 rounded-full p-1 flex z-10">
+            <div className="flex justify-center">
+              <div className="bg-gray-900  bg-opacity-30 rounded-full p-1 flex">
                 <button
                   className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                    activeTab === 'day' ? 'bg-white shadow-sm' : 'hover:bg-white hover:bg-opacity-20'
+                    activeTab === 'day' ? 'bg-white text-black' : 'text-white hover:bg-white hover:bg-opacity-20'
                   }`}
                   onClick={() => setActiveTab('day')}
                 >
-                  Day
+                  24 Hours
                 </button>
                 <button
                   className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                    activeTab === 'week' ? 'bg-white shadow-sm' : 'hover:bg-white hover:bg-opacity-20'
+                    activeTab === 'week' ? 'bg-white text-black' : 'text-white hover:bg-white hover:bg-opacity-20'
                   }`}
                   onClick={() => setActiveTab('week')}
                 >
-                  Week
+                  7 Days
                 </button>
               </div>
             </div>
 
-      {/* Current Weather */}
-          <div className="px-4 mb-8">
+            {/* Forecast Section */}
+            <div className="bg-gray-900 bg-opacity-20 rounded-2xl p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-white">
+                  {activeTab === 'day' ? 'Hourly Forecast' : 'Daily Forecast'}
+                </h3>
+                <button
+                  onClick={handleRefresh}
+                  className="text-sm bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-2 rounded-full text-gray-800 flex items-center gap-2"
+                >
+                  Refresh <RefreshCw className='w-4 h-4' />
+                </button>
+              </div>
+
+              {activeTab === 'day' ? (
+                hourlyForecast.length > 0 ? (
+                  <div className="space-y-3">
+                    {hourlyForecast.slice(0, 6).map((f, i) => (
+                      <div key={i} className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 flex items-center justify-between">
+                        <div className="text-gray-800  font-medium">{f.time}</div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-2xl">{f.icon}</div>
+                          <div className="text-gray-800 font-medium text-lg">{f.temp}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center py-4 text-gray-400">No hourly forecast available</p>
+                )
+              ) : weeklyForecast.length > 0 ? (
+                <div className="space-y-3">
+                  {weeklyForecast.map((day, index) => (
+                    <div key={index} className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 flex items-center justify-between">
+                      <div className="text-gray-800 font-medium">{day.day}</div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">{day.icon}</div>
+                        <div className="text-gray-800  font-medium text-lg">{day.temp}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center py-4 text-gray-400">No weekly forecast available</p>
+              )}
+            </div>
+
+            {/* Weather Details */}
+            {currentWeather && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-900  bg-opacity-20 rounded-xl p-4 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Droplet className="w-4 h-4 text-blue-400" />
+                    <span className="text-sm text-gray-400">HUMIDITY</span>
+                  </div>
+                  <div className="text-2xl font-light text-white">{currentWeather.main.humidity}%</div>
+                </div>
+                
+                <div className="bg-gray-900 bg-opacity-20 rounded-xl p-4 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Thermometer className="w-4 h-4 text-orange-400" />
+                    <span className="text-sm text-gray-400">FEELS LIKE</span>
+                  </div>
+                  <div className="text-2xl font-light text-white">{formatTemp(currentWeather.main.feels_like)}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* Desktop Design (unchanged) */}
+    <div className="hidden md:block w-full max-w-xl rounded-3xl border border-white border-opacity-30 bg-transparent backdrop-blur-md p-6 text-gray-900 mt-10">
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <Loader size={48} className="animate-spin mb-4" />
+          <p>Getting city's weather data...</p>
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <p className="text-red-600 text-lg font-mono mb-4">{error}</p>
+        </div>
+      ) : (
+        <>
+          {/* Tab Selector */}
+          <div className="flex justify-center mb-8 w-full">
+            <div className="bg-white bg-opacity-30 rounded-full p-1 flex z-10">
+              <button
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                  activeTab === 'day' ? 'bg-white shadow-sm' : 'hover:bg-white hover:bg-opacity-20'
+                }`}
+                onClick={() => setActiveTab('day')}
+              >
+                Day
+              </button>
+              <button
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                  activeTab === 'week' ? 'bg-white shadow-sm' : 'hover:bg-white hover:bg-opacity-20'
+                }`}
+                onClick={() => setActiveTab('week')}
+              >
+                Week
+              </button>
+            </div>
+          </div>
+
+          {/* Current Weather */}
+          <div className="mb-8">
             <div className="bg-white rounded-2xl shadow-md p-6">
               {/* Temperature and Location */}
               <div className="flex items-center justify-between">
@@ -409,57 +541,55 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
             </div>
           </div>
 
+          {/* Forecast */}
+          <div className="bg-white bg-opacity-30 rounded-xl p-4 w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">
+                {activeTab === 'day' ? '24-hour forecast' : '7-day forecast'}
+              </h3>
+              <button
+                onClick={handleRefresh}
+                className="text-sm bg-yellow-200 flex items-center bg-opacity-20 hover:bg-opacity-30 hover:bg-yellow-300 px-3 py-2 px-3 rounded-full"
+              >
+                Refresh <RefreshCw className='w-5 h-5 ml-2 rounded-full' />
+              </button>
+            </div>
 
-            {/* Forecast */}
-            <div className="bg-white bg-opacity-30 rounded-xl p-4 w-full">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">
-                  {activeTab === 'day' ? '24-hour forecast' : '7-day forecast'}
-                </h3>
-                 <button
-                    onClick={handleRefresh}
-                    className="text-sm bg-yellow-200 flex items-center bg-opacity-20 hover:bg-opacity-30 px-3 py-2 px-3 rounded-full"
-                    >
-                  Refresh <RefreshCw className='w-5 h-5 ml-2 rounded-full' />
-                </button>
-              </div>
-
-              {activeTab === 'day' ? (
-                hourlyForecast.length > 0 ? (
-                   <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+            {activeTab === 'day' ? (
+              hourlyForecast.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
                   {hourlyForecast.map((f, i) => (
-                    <div key={i} className="bg-gray-100 hover:bg-yellow-200 p-4 rounded-lg text-center">
+                    <div key={i} className="bg-gray-200 hover:bg-yellow-200 p-3 rounded-lg text-center">
                       <div className="mb-2 text-gray-600">{f.icon}</div>
                       <div className="font-medium text-black">{f.temp}</div>
                       <div className="text-sm text-gray-600">{f.time}</div>
                     </div>
                   ))}
                 </div>
-                
-                ) : (
-                  <p className="text-center py-4">No hourly forecast available</p>
-                )
-              ) : weeklyForecast.length > 0 ? (
-                <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-4 md:grid-cols-7 sm:gap-3">
-                  {weeklyForecast.map((day, index) => (
-                    <div key={index} className="flex justify-center">
-                      <div className="bg-gray-50 bg-opacity-20 backdrop-blur-sm rounded-lg p-3 flex flex-row sm:flex-col items-center justify-between sm:justify-center w-full">
-                        <div className="text-lg sm:text-xl md:text-2xl font-medium">{day.day}</div>
-                           <div className="my-2">{day.icon}</div>
-                        <div className="text-lg font-medium sm:text-xl md:text-2xl">{day.temp}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               ) : (
-                <p className="text-center py-4">No weekly forecast available</p>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+                <p className="text-center py-4">No hourly forecast available</p>
+              )
+            ) : weeklyForecast.length > 0 ? (
+              <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-4 md:grid-cols-7 sm:gap-3">
+                {weeklyForecast.map((day, index) => (
+                  <div key={index} className="flex justify-center">
+                    <div className="bg-gray-50 hover:bg-yellow-200 bg-opacity-20 backdrop-blur-sm rounded-lg p-3 flex flex-row sm:flex-col items-center justify-between sm:justify-center w-full">
+                      <div className="text-lg sm:text-xl md:text-2xl font-medium">{day.day}</div>
+                      <div className="my-2">{day.icon}</div>
+                      <div className="text-lg font-medium sm:text-xl md:text-2xl">{day.temp}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center py-4">No weekly forecast available</p>
+            )}
+          </div>
+        </>
+      )}
     </div>
-  );
+  </div>
+);
 };
 
 export default SearchWeatherDashboard;
