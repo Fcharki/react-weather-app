@@ -1,15 +1,47 @@
 import Lottie from "lottie-react";
-import loadingAnimation from '../assets/animations/about-animation.json';
+import sunny from '../assets/animations/sunny.json';
+import sunAnimation from '../assets/animations/sun-animation.json';
+import moonAnimation from '../assets/animations/moon-animation.json';
 
 const About: React.FC = () => {
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-blue-200 via-white to-blue-300 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-4 overflow-y-auto">
-      <Lottie 
-        animationData={loadingAnimation} 
-        loop={true} 
-        className="w-80 h-80 sm:w-72 sm:h-72 rounded-lg mb-6"
-      />
 
+      {/* centered grid container */}
+      <div className="flex justify-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 place-items-center w-fit">
+
+          {/* Show ONLY on lg */}
+          <div className="hidden lg:block">
+            <Lottie
+              animationData={sunny}
+              loop={true}
+              className="w-80 h-80 sm:w-72 sm:h-72"
+            />
+          </div>
+
+          {/* Show on all  */}
+          <div>
+            <Lottie
+              animationData={sunAnimation}
+              loop={true}
+              className="w-80 h-80 sm:w-72 sm:h-72"
+            />
+          </div>
+
+          {/* Show ONLY from md and up */}
+          <div className="hidden md:block">
+            <Lottie
+              animationData={moonAnimation}
+              loop={true}
+              className="w-80 h-80 sm:w-72 sm:h-72"
+            />
+          </div>
+
+        </div>
+      </div>
+
+      {/* info text */}
       <div className="text-center max-w-md bg-white bg-opacity-50 backdrop-blur-sm rounded-2xl shadow-lg p-6">
         <h1 className="text-2xl sm:text-3xl font-semibold mb-2 text-blue-900">SkySnapping</h1>
         <p className="text-gray-800 text-md sm:text-lg font-medium my-3">

@@ -339,7 +339,7 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
     ) : (
       <>
         {/* Mobile Header with Current Weather */}
-        <div className="flex-shrink-0 pt-16 pb-6 px-6 text-center text-gray-100 font-semibold mt-26">
+        <div className="flex-shrink-0 pt-16 pb-6 px-6 text-center text-gray-100 font-semibold mt-28">
           <h2 className="text-2xl mb-2">{location?.name || '-'}</h2>
           <p className="text-sm opacity-80 mb-6">{location?.country || ''}</p>
           

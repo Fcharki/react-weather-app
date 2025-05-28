@@ -193,13 +193,13 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
             Home
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
           </a>
-          <a 
+          {/* <a 
             href="/forecast" 
             className="text-base  font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-300 relative group py-2"
           >
             Forecast
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
-          </a>
+          </a> */}
           <a 
              href="/about"
             className="text-base font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-300 relative group py-2"
@@ -208,7 +208,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
           </a>
           
-          <div className="relative group">
+          {/* <div className="relative group">
             <button className="flex items-center gap-x-1  text-base font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-300 py-2">
               More
               <ChevronDownIcon className="w-5 h-5 text-blue-500 group-hover:text-blue-600 dark:group-hover:text-blue-300" />
@@ -237,7 +237,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
                 </a>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </nav>
       
@@ -314,13 +314,13 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
                 >
                   Home
                 </a>
-                <a
+                {/* <a
                   href="/forecast"
                   className="block rounded-lg  px-3 py-2 text-base font-medium text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Forecast
-                </a>
+                </a> */}
                 <a
                   href="/about"
                   className="block rounded-lg px-3 py-2 text-base font-medium text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -329,7 +329,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
                   About
                 </a>
                 
-                <Disclosure as="div" className="-mx-3">
+                {/* <Disclosure as="div" className="-mx-3">
                   {({ open }) => (
                     <>
                       <Disclosure.Button className="flex  w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-medium text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -364,7 +364,7 @@ const WeatherNavBar: React.FC<{ onSearch?: (city: string) => void }> = ({ onSear
                       </Disclosure.Panel>
                     </>
                   )}
-                </Disclosure>
+                </Disclosure> */}
               </div>
             </div>
           </div>
