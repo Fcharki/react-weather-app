@@ -77,7 +77,7 @@ const App = () => {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 parent">
       <WeatherNavBar onSearch={handleSearch} />
       <Routes>
-        <Route path="about" element={<About />} />
+        <Route path="/about" element={<About />} />
       </Routes>
       <div className="pt-32"> 
         {renderWeatherComponent()}
