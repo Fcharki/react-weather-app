@@ -84,16 +84,28 @@ const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
     return `${Math.round(temp)}°`;
   };
 
-  // Format date/time
-  const formatTime = (timestamp: number): string => {
-    const localTimestamp = (timestamp + timezoneOffset) * 1000; // apply offset, convert to ms
-    const date = new Date(localTimestamp);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
+  // Fixed time formatting function
+  const formatTime = (timestamp: number, timezoneOffsetSeconds?: number): string => {
+    if (timezoneOffsetSeconds !== undefined) {
+      // Apply timezone offset for specific city times (sunrise/sunset)
+      const adjustedTimestamp = (timestamp + timezoneOffsetSeconds) * 1000;
+      const date = new Date(adjustedTimestamp);
+      return date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: true,
+        timeZone: 'UTC' // Use UTC since we already applied the offset
+      });
+    } else {
+      // For regular timestamps, use local formatting
+      return new Date(timestamp * 1000).toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+    }
   };
+
 
   const formatDay = (timestamp: number): string => {
     const date = new Date(timestamp * 1000);
@@ -101,32 +113,27 @@ const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
   };
 
 
+  // Fixed current date/time function
   const getCurrentDateTime = (timezoneOffsetSeconds: number): string => {
-    // Get current UTC timestamp in seconds
-    const utcTimestamp = Math.floor(Date.now() / 1000);
-
-    // Apply timezone offset (API returns offset in seconds from UTC)
-    const localTimestamp = (utcTimestamp + timezoneOffsetSeconds) * 1000; // Convert to ms
-    const localDate = new Date(localTimestamp);
-
-    const time = localDate.toLocaleTimeString('en-US', {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const cityTime = new Date(utc + (timezoneOffsetSeconds * 1000));
+    
+    const time = cityTime.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: true, 
+      hour12: true
     });
-
-    const date = localDate.toLocaleDateString('en-US', {
+    
+    const date = cityTime.toLocaleDateString('en-US', {
       weekday: 'long',
       day: 'numeric',
       month: 'short',
-      year: '2-digit',
+      year: '2-digit'
     });
-
+    
     return `${time} - ${date}`;
   };
-
-
-
 
   const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.openweathermap.org';
   const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
@@ -444,7 +451,7 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
       </div>
     </div>
 
-    {/* Desktop Design (unchanged) */}
+    {/* Desktop Design */}
     <div className="hidden md:block w-full max-w-xl rounded-3xl border border-white border-opacity-30 bg-transparent backdrop-blur-md p-6 text-gray-900 mt-10">
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12">
@@ -516,11 +523,11 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
                   </span>
                   <div className="flex items-center gap-1">
                     <Sunrise className="w-4 h-4 text-orange-400" />
-                    <span className="font-semibold">Sunrise: {formatTime(currentWeather.sys.sunrise)}</span>
+                    <span className="font-semibold">Sunrise: {formatTime(currentWeather.sys.sunrise, timezoneOffset)}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Sunset className="w-4 h-4 text-blue-800" />
-                    <span className="font-semibold">Sunset: {formatTime(currentWeather.sys.sunset)}</span>
+                    <span className="font-semibold">Sunset: {formatTime(currentWeather.sys.sunset, timezoneOffset)}</span>
                   </div>
                 </div>
               )}

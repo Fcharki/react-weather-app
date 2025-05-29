@@ -73,8 +73,11 @@ const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
 
 
   const formatTemp = (temp: number): string => `${Math.round(temp)}°`;
+
   const formatTime = (ts: number): string => new Date(ts * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, });
+  
   const formatDay = (ts: number): string => new Date(ts * 1000).toLocaleDateString('en-US', { weekday: 'short' });
+  
   const getCurrentDateTime = (): string => {
     const now = new Date();
     return `${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true,  })} - ${now.toLocaleDateString('en-US', {
