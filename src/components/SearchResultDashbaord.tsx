@@ -2,21 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Loader, Search, RefreshCw, Sunrise, Sunset, Droplet, Thermometer, MapPin } from 'lucide-react';
 import { type WeatherLocation, type WeatherForecastItem, type DailyForecast, type WeeklyForecastItem 
                                                                  } from './types/weatherDataTypes';
-                                                                 
-
-//* background images 
-import cloudy from '../assets/images/clouds.jpg';
-import sunny from '../assets/images/sunny.jpg';
-import rainy from '../assets/images/rain.jpg';
-import mist from '../assets/images/mist.jpg';
-import dust from '../assets/images/dust.jpg';
-import snowy from '../assets/images/snowy.jpg';
-import thunder from '../assets/images/thunder.jpg';
-import tornado from '../assets/images/tornado.jpg';
-import thunderstorm from '../assets/images/thunderstorm.jpg';
-import drizzle from '../assets/images/drizzle.jpg';
-import windy from '../assets/images/windy.jpg';
-
+import { backgroundImageMap } from './backgroundImageMap';
+import { normalizeWeatherCondition } from './backgroundImageMap';                                                            
 interface SearchWeatherDashboardProps {
   city?: string;
   locationError?: string | null;
@@ -32,39 +19,6 @@ const SearchWeatherDashboard: React.FC<SearchWeatherDashboardProps> = ({ city, l
   const [weeklyForecast, setWeeklyForecast] = useState<WeeklyForecastItem[]>([]);
   const [timezoneOffset, setTimezoneOffset] = useState<number>(0); // Store timezone offset separately
 
-
-  //* background image map
-const backgroundImageMap: Record<string, string> = {
-  sunny,
-  rainy,
-  snowy,
-  thunder,
-  thunderstorm,
-  drizzle,
-  mist,
-  dust,
-  tornado,
-  windy,
-  cloudy,
-};
-
-
-//* normalizing the condition
-const normalizeWeatherCondition = (desc: string): string => {
-  const d = desc.toLowerCase();
-  if (d.includes("sun")) return "sunny";
-  if (d.includes("cloud")) return "cloudy";
-  if (d.includes("rain")) return "rainy";
-  if (d.includes("snow")) return "snowy";
-  if (d.includes("drizzle")) return "drizzle";
-  if (d.includes("thunderstorm")) return "thunderstorm";
-  if (d.includes("thunder")) return "thunder";
-  if (d.includes("mist")) return "mist";
-  if (d.includes("dust")) return "dust";
-  if (d.includes("tornado")) return "tornado";
-  if (d.includes("wind")) return "windy";
-  return "cloudy"; // default fallback
-};
 
 
 const currentCondition = currentWeather?.weather?.[0]?.description || '';
