@@ -78,6 +78,7 @@ const App = () => {
       <WeatherNavBar onSearch={handleSearch} />
       <Routes>
         <Route path="/about" element={<About />} />
+        <Route path="/" element={<WeatherDashboard />} />
       </Routes>
       <div className="pt-32"> 
         {renderWeatherComponent()}
