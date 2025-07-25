@@ -257,7 +257,7 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat flex justify-center items-center p-4"
         style={{ backgroundImage: `url(${backgroundImage})`  }}
       >
-        <div className="w-full max-w-xl rounded-3xl border border-white border-opacity-30 bg-transparent backdrop-blur-md p-6 text-gray-900">
+        <div className="w-full max-w-xl rounded-3xl border border-white border-opacity-30 bg-transparent backdrop-blur-md p-6 mt-8 text-gray-900">
           <div className="flex flex-col items-center justify-center py-12">
             <Search size={48} className="mb-6 text-gray-700" />
             <h2 className="text-2xl font-medium mb-2 text-center">Search for a city</h2>
