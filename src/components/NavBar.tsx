@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 // import { ChevronDownIcon } from '@heroicons/react/20/solid'; //  to add when needed
 import { Dialog } from '@headlessui/react'; // Disclosure, to add when needed
 import logo from '../assets/images/sun-logo.png';
@@ -13,6 +13,9 @@ interface WeatherNavBarProps {
 }
 
 const WeatherNavBar: React.FC<WeatherNavBarProps> = ({ onSearch, onUseMyLocation, locationError }) => {
+  const location = useLocation();
+  const isAboutPage = location.pathname === '/about';
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -191,23 +194,25 @@ const WeatherNavBar: React.FC<WeatherNavBarProps> = ({ onSearch, onUseMyLocation
         </div>
 
         {/* Search bar - desktop */}
-        <div className="flex-1 max-w-md mx-4 hidden md:flex md:items-center md:gap-2">
-          {renderSearchForm('desktop', desktopContainerRef)}
+        {!isAboutPage && (
+          <div className="flex-1 max-w-md mx-4 hidden md:flex md:items-center md:gap-2">
+            {renderSearchForm('desktop', desktopContainerRef)}
 
-          {/* Use my location button (desktop) */}
-          {onUseMyLocation && (
-            <button
-              type="button"
-              onClick={onUseMyLocation}
-              title="Use my location"
-              className="flex-shrink-0 flex items-center justify-center p-2 rounded-full border border-gray-300 dark:border-gray-600 
-                         bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 
-                         hover:text-blue-600 hover:border-blue-400 transition-colors"
-            >
-              <MapPinIcon className="h-5 w-5" />
-            </button>
-          )}
-        </div>
+            {/* Use my location button (desktop) */}
+            {onUseMyLocation && (
+              <button
+                type="button"
+                onClick={onUseMyLocation}
+                title="Use my location"
+                className="flex-shrink-0 flex items-center justify-center p-2 rounded-full border border-gray-300 dark:border-gray-600 
+                           bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 
+                           hover:text-blue-600 hover:border-blue-400 transition-colors"
+              >
+                <MapPinIcon className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Mobile menu button */}
         <div className="flex lg:hidden gap-4 items-center">
@@ -242,23 +247,25 @@ const WeatherNavBar: React.FC<WeatherNavBarProps> = ({ onSearch, onUseMyLocation
       </nav>
 
       {/* Mobile search bar - only visible when menu is closed */}
-      <div className="px-4 pt-2 md:hidden flex items-center gap-2">
-        {renderSearchForm('mobile-bar', mobileBarContainerRef)}
+      {!isAboutPage && (
+        <div className="px-4 pt-2 md:hidden flex items-center gap-2">
+          {renderSearchForm('mobile-bar', mobileBarContainerRef)}
 
-        {/* Use my location button (mobile top bar) */}
-        {onUseMyLocation && (
-          <button
-            type="button"
-            onClick={onUseMyLocation}
-            title="Use my location"
-            className="flex-shrink-0 flex items-center justify-center p-2 rounded-full border border-gray-300 dark:border-gray-600 
-                       bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 
-                       hover:text-blue-600 hover:border-blue-400 transition-colors"
-          >
-            <MapPinIcon className="h-5 w-5" />
-          </button>
-        )}
-      </div>
+          {/* Use my location button (mobile top bar) */}
+          {onUseMyLocation && (
+            <button
+              type="button"
+              onClick={onUseMyLocation}
+              title="Use my location"
+              className="flex-shrink-0 flex items-center justify-center p-2 rounded-full border border-gray-300 dark:border-gray-600 
+                         bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 
+                         hover:text-blue-600 hover:border-blue-400 transition-colors"
+            >
+              <MapPinIcon className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Location error message */}
       {locationError && (
@@ -289,15 +296,17 @@ const WeatherNavBar: React.FC<WeatherNavBarProps> = ({ onSearch, onUseMyLocation
           </div>
 
           {/* Mobile menu search */}
-          <div className="mt-6">
-            {renderSearchForm('mobile-menu', mobileMenuContainerRef)}
-          </div>
+          {!isAboutPage && (
+            <div className="mt-6">
+              {renderSearchForm('mobile-menu', mobileMenuContainerRef)}
+            </div>
+          )}
 
           <div className="mt-6 flow-root">
             <div className="-my-6 divide-y divide-gray-500/10 dark:divide-gray-700">
               <div className="space-y-1 py-6">
                 {/* Use my location (mobile menu) */}
-                {onUseMyLocation && (
+                {onUseMyLocation && !isAboutPage && (
                   <button
                     type="button"
                     onClick={() => {
@@ -318,6 +327,7 @@ const WeatherNavBar: React.FC<WeatherNavBarProps> = ({ onSearch, onUseMyLocation
                   About
                 </Link>
                 <a
+                
                   href="https://fadmacharki.netlify.app"
                   target='_blank'
                   className="block rounded-lg px-3 py-2 text-base font-medium text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800"

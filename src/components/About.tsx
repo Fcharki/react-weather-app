@@ -9,7 +9,7 @@ const About: React.FC = () => {
 
       {/* centered grid container */}
       <div className="flex justify-center">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 place-items-center w-fit mt-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 place-items-center w-fit mt-12">
 
           {/* Show ONLY on lg */}
           <div className="hidden lg:block">
