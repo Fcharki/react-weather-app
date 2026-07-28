@@ -85,6 +85,13 @@ const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
     return `${time} - ${date}`;
   };
 
+  const getShortDate = (timezoneOffsetSeconds: number): string => {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const cityTime = new Date(utc + (timezoneOffsetSeconds * 1000));
+    return cityTime.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short' });
+  };
+
   const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.openweathermap.org';
   const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 
@@ -281,9 +288,6 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-8 sm:py-12">
             <p className="text-red-600 text-lg font-mono mb-4">{error}</p>
-            {/* <button onClick={handleRefresh} className="px-4 py-2 bg-white bg-opacity-30 hover:bg-opacity-40 rounded-full">
-              Try Again
-            </button> */}
           </div>
         ) : (
           <>
@@ -421,178 +425,197 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
     </div>
 
     {/* Mobile Portrait Layout - Full Screen Native App Style */}
-    <div className="sm:hidden portrait:flex landscape:hidden w-full flex-col h-full bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 overflow-y-auto">
-      {loading ? (
-        <div className="flex flex-col items-center justify-center h-full">
-          <Loader size={48} className="animate-spin mb-4 text-white" />
-          <p className="text-white">Getting city's weather data...</p>
-        </div>
-      ) : error ? (
-        <div className="flex flex-col items-center justify-center h-full">
-          <p className="text-red-400 text-lg font-mono mb-4 text-center px-4">{error}</p>
-          <button onClick={handleRefresh} className="px-6 py-3 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full text-gray-800">
-            Try Again
-          </button>
-        </div>
-      ) : (
-        <>
-          {/* Mobile Header with Current Weather */}
-          <div className="flex-shrink-0 pt-16 pb-6 px-6 text-center text-white mt-28">
-            <h2 className="text-2xl mb-2">{location?.name || '-'}</h2>
-            <p className="text-sm opacity-80 mb-6">{location?.country || ''}</p>
-            
-            <div className="flex items-center justify-center mb-4">
-              {currentWeather && (
-                <span className="text-6xl mr-4">
-                  {getWeatherIcon(currentWeather.weather[0].icon, 64)}
-                </span>
-              )}
-              <h1 className="text-6xl font-thin">
-                {currentWeather ? formatTemp(currentWeather.main.temp) : '-'}
-              </h1>
-            </div>
-            
-            {currentWeather && (
-              <p className="text-lg capitalize mb-6 opacity-90">
-                {currentWeather.weather[0].description}
-              </p>
-            )}
+    <div className="sm:hidden portrait:flex landscape:hidden relative w-full flex-col h-full overflow-y-auto">
+      {/* Weather-condition background image + readability overlay (was previously hidden by an opaque gradient) */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-blue-900/70 to-purple-900/85" />
 
-            {/* Quick Stats Row */}
-            {currentWeather && (
-              <div className="flex justify-center space-x-8 text-sm">
-                <div className="text-center">
-                  <Droplet className="w-4 h-4 mx-auto mb-1 opacity-80" />
-                  <p>{currentWeather.main.humidity}%</p>
-                </div>
-                <div className="text-center">
-                  <Thermometer className="w-4 h-4 mx-auto mb-1 opacity-80" />
-                  <p>{formatTemp(currentWeather.main.feels_like)}</p>
-                </div>
+      <div className="relative flex flex-col h-full">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-full">
+            <Loader size={40} className="animate-spin mb-4 text-white" />
+            <p className="text-white text-sm">Getting city's weather data...</p>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-full px-6">
+            <p className="text-red-300 text-base font-mono mb-4 text-center">{error}</p>
+            <button
+              onClick={handleRefresh}
+              className="px-6 py-3 bg-white bg-opacity-20 active:bg-opacity-30 rounded-full text-gray-800 font-medium"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Mobile Header with Current Weather */}
+            <div className="flex-shrink-0 pt-[calc(7.5rem+env(safe-area-inset-top))] pb-5 px-6 text-center text-gray-100">
+              <p className="text-xs uppercase tracking-wide opacity-70 mb-1">{getShortDate(timezoneOffset)}</p>
+              <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                <MapPin className="w-4 h-4 opacity-80" />
+                <h2 className="text-xl font-semibold">{location?.name || '-'}</h2>
               </div>
-            )}
-          </div>
+              <p className="text-xs opacity-70 mb-5">{location?.country || ''}</p>
 
-          {/* Mobile Tab Switcher */}
-          <div className="flex-shrink-0 px-6 mb-4">
-            <div className="bg-gray-900 bg-opacity-30 rounded-full p-1 flex">
-              <button
-                className={`flex-1 py-3 rounded-full text-sm font-medium transition-all ${
-                  activeTab === 'day' 
-                    ? 'bg-white text-black' 
-                    : 'text-white hover:bg-white hover:bg-opacity-20'
-                }`}
-                onClick={() => setActiveTab('day')}
-              >
-                24 Hours
-              </button>
-              <button
-                className={`flex-1 py-3 rounded-full text-sm font-medium transition-all ${
-                  activeTab === 'week' 
-                    ? 'bg-white text-black' 
-                    : 'text-white hover:bg-white hover:bg-opacity-20'
-                }`}
-                onClick={() => setActiveTab('week')}
-              >
-                7 Days
-              </button>
+              <div className="flex items-center justify-center gap-3 mb-2">
+                {currentWeather && (
+                  <span className="text-5xl leading-none drop-shadow-lg">
+                    {getWeatherIcon(currentWeather.weather[0].icon, 72)}
+                  </span>
+                )}
+                <h1 className="text-6xl font-thin tracking-tight">
+                  {currentWeather ? formatTemp(currentWeather.main.temp) : '-'}
+                </h1>
+              </div>
+
+              {currentWeather && (
+                <p className="text-base capitalize opacity-90 mb-5">
+                  {currentWeather.weather[0].description}
+                </p>
+              )}
+
+              {/* Quick Stats Row */}
+              {currentWeather && (
+                <div className="flex justify-center gap-3">
+                  <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1.5 text-xs">
+                    <Droplet className="w-3.5 h-3.5 opacity-90" />
+                    <span>{currentWeather.main.humidity}%</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1.5 text-xs">
+                    <Thermometer className="w-3.5 h-3.5 opacity-90" />
+                    <span>Feels {formatTemp(currentWeather.main.feels_like)}</span>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* Mobile Forecast Content */}
-          <div className="flex-1 px-6 pb-6 overflow-y-auto">
-            <div className="bg-gray-900 bg-opacity-20 rounded-2xl p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-white">
-                  {activeTab === 'day' ? 'Hourly Forecast' : 'Daily Forecast'}
-                </h3>
+            {/* Mobile Tab Switcher */}
+            <div className="flex-shrink-0 px-6 mb-3">
+              <div className="bg-black/20 rounded-full p-1 flex">
                 <button
-                  onClick={handleRefresh}
-                  className="text-sm bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-2 rounded-full text-gray-800 flex items-center gap-2"
+                  className={`flex-1 py-2.5 rounded-full text-sm font-medium transition-all ${
+                    activeTab === 'day'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-white/70 active:text-white'
+                  }`}
+                  onClick={() => setActiveTab('day')}
                 >
-                  Refresh <RefreshCw className='w-4 h-4' />
+                  24 Hours
+                </button>
+                <button
+                  className={`flex-1 py-2.5 rounded-full text-sm font-medium transition-all ${
+                    activeTab === 'week'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-white/70 active:text-white'
+                  }`}
+                  onClick={() => setActiveTab('week')}
+                >
+                  7 Days
                 </button>
               </div>
+            </div>
 
-              {activeTab === 'day' ? (
-                hourlyForecast.length > 0 ? (
-                  <div className="space-y-3">
-                    {hourlyForecast.slice(0, 6).map((f, i) => (
-                      <div key={i} className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 flex items-center justify-between">
-                        <div className="text-gray-800 font-medium">{f.time}</div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-2xl">{f.icon}</div>
-                          <div className="text-gray-800 font-medium text-lg">{f.temp}</div>
+            {/* Mobile Forecast Content */}
+            <div className="flex-1 px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] overflow-y-auto">
+              <div className="bg-black/20 rounded-2xl p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-white font-medium text-sm">
+                    {activeTab === 'day' ? 'Hourly Forecast' : 'Daily Forecast'}
+                  </h3>
+                  <button
+                    onClick={handleRefresh}
+                    aria-label="Refresh forecast"
+                    className="flex items-center justify-center w-9 h-9 rounded-full bg-white/10 active:bg-white/20 text-white"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {activeTab === 'day' ? (
+                  hourlyForecast.length > 0 ? (
+                    <div className="space-y-2">
+                      {hourlyForecast.slice(0, 6).map((f, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between bg-white/90 rounded-xl px-4 py-3"
+                        >
+                          <span className="text-gray-700 text-sm font-medium w-14">{f.time}</span>
+                          <div className="flex-shrink-0">{f.icon}</div>
+                          <span className="text-gray-900 text-base font-semibold w-14 text-right">{f.temp}</span>
                         </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center py-8 text-white/70 text-sm">No hourly forecast available</p>
+                  )
+                ) : weeklyForecast.length > 0 ? (
+                  <div className="space-y-2">
+                    {weeklyForecast.map((day, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between bg-white/90 rounded-xl px-4 py-3"
+                      >
+                        <span className="text-gray-700 font-medium w-14">{day.day}</span>
+                        <div className="flex-shrink-0">{day.icon}</div>
+                        <span className="text-gray-900 text-base font-semibold w-14 text-right">{day.temp}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-center py-4 text-gray-400">No hourly forecast available</p>
-                )
-              ) : weeklyForecast.length > 0 ? (
-                <div className="space-y-3">
-                  {weeklyForecast.map((day, index) => (
-                    <div key={index} className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 flex items-center justify-between">
-                      <div className="text-gray-800 font-medium">{day.day}</div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-2xl">{day.icon}</div>
-                        <div className="text-gray-800 font-medium text-lg">{day.temp}</div>
+                  <p className="text-center py-8 text-white/70 text-sm">No weekly forecast available</p>
+                )}
+              </div>
+
+              {/* Weather Details */}
+              {currentWeather && (
+                <div className="grid grid-cols-2 gap-3 mt-3">
+                  <div className="bg-black/20 rounded-xl p-4 text-center">
+                    <div className="flex items-center justify-center gap-1.5 mb-2">
+                      <Droplet className="w-4 h-4 text-blue-300" />
+                      <span className="text-xs text-white/60 tracking-wide">HUMIDITY</span>
+                    </div>
+                    <div className="text-2xl font-light text-white">{currentWeather.main.humidity}%</div>
+                  </div>
+
+                  <div className="bg-black/20 rounded-xl p-4 text-center">
+                    <div className="flex items-center justify-center gap-1.5 mb-2">
+                      <Thermometer className="w-4 h-4 text-orange-300" />
+                      <span className="text-xs text-white/60 tracking-wide">FEELS LIKE</span>
+                    </div>
+                    <div className="text-2xl font-light text-white">{formatTemp(currentWeather.main.feels_like)}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Additional Info Section for Mobile */}
+              {currentWeather?.sys && (
+                <div className="mt-3 bg-black/20 rounded-2xl p-4">
+                  <h4 className="text-white font-medium text-sm mb-3">Sun & Moon</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center gap-2 bg-white/5 rounded-xl px-3 py-2.5">
+                      <Sunrise className="w-5 h-5 text-orange-300 flex-shrink-0" />
+                      <div>
+                        <p className="text-white text-xs opacity-70">Sunrise</p>
+                        <p className="text-white text-sm font-medium">{formatTime(currentWeather.sys.sunrise, timezoneOffset)}</p>
                       </div>
                     </div>
-                  ))}
+                    <div className="flex items-center gap-2 bg-white/5 rounded-xl px-3 py-2.5">
+                      <Sunset className="w-5 h-5 text-blue-300 flex-shrink-0" />
+                      <div>
+                        <p className="text-white text-xs opacity-70">Sunset</p>
+                        <p className="text-white text-sm font-medium">{formatTime(currentWeather.sys.sunset, timezoneOffset)}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                <p className="text-center py-4 text-gray-400">No weekly forecast available</p>
               )}
             </div>
-
-            {/* Weather Details */}
-            {currentWeather && (
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <div className="bg-gray-900 bg-opacity-20 rounded-xl p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Droplet className="w-4 h-4 text-blue-400" />
-                    <span className="text-sm text-gray-400">HUMIDITY</span>
-                  </div>
-                  <div className="text-2xl font-light text-white">{currentWeather.main.humidity}%</div>
-                </div>
-                
-                <div className="bg-gray-900 bg-opacity-20 rounded-xl p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Thermometer className="w-4 h-4 text-orange-400" />
-                    <span className="text-sm text-gray-400">FEELS LIKE</span>
-                  </div>
-                  <div className="text-2xl font-light text-white">{formatTemp(currentWeather.main.feels_like)}</div>
-                </div>
-              </div>
-            )}
-
-            {/* Additional Info Section for Mobile */}
-            {currentWeather?.sys && (
-              <div className="mt-4 bg-gray-900 bg-opacity-20 rounded-2xl p-4">
-                <h4 className="text-white font-medium mb-3">Sun & Moon</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <Sunrise className="w-5 h-5 text-orange-400" />
-                    <div>
-                      <p className="text-white text-sm">Sunrise</p>
-                      <p className="text-white opacity-80 text-xs">{formatTime(currentWeather.sys.sunrise, timezoneOffset)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Sunset className="w-5 h-5 text-blue-400" />
-                    <div>
-                      <p className="text-white text-sm">Sunset</p>
-                      <p className="text-white opacity-80 text-xs">{formatTime(currentWeather.sys.sunset, timezoneOffset)}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   </div>
 );
