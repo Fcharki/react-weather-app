@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import WeatherNavBar from './components/NavBar';
 import WeatherDashboard from './components/DefaultWeatherDashboard';
 import SearchWeatherDashboard from './components/SearchResultDashbaord';
 import About from './components/About';
+import Footer from './components/Footer';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 
@@ -11,79 +12,78 @@ interface Coordinates {
   longitude: number;
 }
 
+// Default location: Agadir, Morocco
+const DEFAULT_COORDINATES: Coordinates = {
+  latitude: 30.4278,
+  longitude: -9.5981,
+};
+
 const App = () => {
   const [searchCity, setSearchCity] = useState<string>('');
-  const [userCoordinates, setUserCoordinates] = useState<Coordinates | null>(null);
-  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
+  const [coordinates, setCoordinates] = useState<Coordinates>(DEFAULT_COORDINATES);
+  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
   const [locationError, setLocationError] = useState<string | null>(null);
-  
+
   const handleSearch = (city: string) => {
     setSearchCity(city);
   };
 
-  // get user's geolocation on component mount
-  useEffect(() => {
-    if (navigator.geolocation) {
-      setIsLoadingLocation(true);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserCoordinates({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          });
-          setIsLoadingLocation(false);
-          setLocationError(null);
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          setLocationError('Unable to access your location. You can search for a city instead.');
-          setIsLoadingLocation(false);
-        },
-        { 
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 600000 // 10 minutes
-        }
-      );
-    } else {
-      setLocationError('Geolocation is not supported by your browser. Please search for a city.');
-      setIsLoadingLocation(false);
+  // called when user explicitly clicks "Use my location"
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      return;
     }
-  }, []);
 
-  // which component to render
+    setIsLoadingLocation(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoordinates({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setSearchCity(''); // clear any active search so location weather shows
+        setIsLoadingLocation(false);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        setLocationError('Unable to access your location.');
+        setIsLoadingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 600000, // 10 minutes
+      }
+    );
+  };
+
+  // which component to render for the home route
   const renderWeatherComponent = () => {
-    // If user has searched for a city, show search results
     if (searchCity) {
       return <SearchWeatherDashboard city={searchCity} />;
     }
-    
-    // if user location is enabled, show loading in WeatherDashboard
-    if (isLoadingLocation) {
-      return <WeatherDashboard isLoading={true} />;
-    }
-    
-    // if we have user's coordinates, show their weather
-    if (userCoordinates) {
-      return <WeatherDashboard coordinates={userCoordinates} />;
-    }
-    
-    // if there was an error getting location and no search,
-    return<SearchWeatherDashboard locationError={locationError} />;
+    return <WeatherDashboard coordinates={coordinates} isLoading={isLoadingLocation} />;
   };
 
   return (
     <Router>
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 parent">
-      <WeatherNavBar onSearch={handleSearch} />
-      <Routes>
-        <Route path="/about" element={<About />} />
-        <Route path="/" element={<WeatherDashboard />} />
-      </Routes>
-      <div className="pt-32"> 
-        {renderWeatherComponent()}
+      <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 parent">
+        <WeatherNavBar
+          onSearch={handleSearch}
+          onUseMyLocation={handleUseMyLocation}
+          locationError={locationError}
+        />
+        <div className="flex-1">
+          <Routes>
+            <Route path="/about" element={<About />} />
+            <Route path="/" element={renderWeatherComponent()} />
+          </Routes>
+        </div>
+        <Footer />
       </div>
-    </div>
     </Router>
   );
 };

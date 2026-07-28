@@ -5,11 +5,11 @@ import moonAnimation from '../assets/animations/moon-animation.json';
 
 const About: React.FC = () => {
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-blue-200 via-white to-blue-300 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-4 overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-200 via-white to-blue-300 backdrop-blur-sm flex flex-col items-center justify-center p-4">
 
       {/* centered grid container */}
       <div className="flex justify-center">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 place-items-center w-fit">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 place-items-center w-fit mt-5">
 
           {/* Show ONLY on lg */}
           <div className="hidden lg:block">
@@ -52,6 +52,7 @@ const About: React.FC = () => {
       <p className="italic text-md font-semibold mt-6">
         Made by{" "}
         <a
+        
           className="text-blue-600 hover:text-blue-700 underline"
           href="https://fadmacharki.netlify.app"
           target="_blank"

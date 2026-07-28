@@ -20,11 +20,9 @@ const SearchWeatherDashboard: React.FC<SearchWeatherDashboardProps> = ({ city, l
   const [timezoneOffset, setTimezoneOffset] = useState<number>(0); // Store timezone offset separately
 
 
-
 const currentCondition = currentWeather?.weather?.[0]?.description || '';
 const normalized = normalizeWeatherCondition(currentCondition);
 const backgroundImage = backgroundImageMap[normalized];
-
 
 
   // Get weather icon based on condition code
@@ -60,12 +58,10 @@ const getWeatherIcon = (iconCode: string, size = 48): React.JSX.Element => {
     }
   };
 
-
   const formatDay = (timestamp: number): string => {
     const date = new Date(timestamp * 1000);
     return date.toLocaleDateString('en-US', { weekday: 'short' });
   };
-
 
   // Fixed current date/time function
   const getCurrentDateTime = (timezoneOffsetSeconds: number): string => {
