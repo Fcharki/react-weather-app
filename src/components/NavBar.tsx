@@ -183,7 +183,7 @@ const WeatherNavBar: React.FC<WeatherNavBarProps> = ({ onSearch, onUseMyLocation
         {/* Logo */}
         <div className="flex-shrink-0">
           <a href="/" className="flex items-center gap-2 group" target='_self'>
-            <img src={logo} className="w-24 h-24 md:w-12 md:h-12" alt="weather app logo" />
+            <img src={logo} className="w-14 h-14 md:w-12 md:h-12" alt="weather app logo" />
             <span className="text-lg md:text-xl font-bold text-blue-700 dark:text-blue-400 hidden sm:block">
              SkySnapping 
             </span>

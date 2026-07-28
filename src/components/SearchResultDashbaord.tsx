@@ -430,7 +430,7 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
       ) : error ? (
         <div className="flex flex-col items-center justify-center h-full">
           <p className="text-red-400 text-lg font-mono mb-4 text-center px-4">{error}</p>
-          <button onClick={handleRefresh} className="px-6 py-3 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full text-white">
+          <button onClick={handleRefresh} className="px-6 py-3 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full text-gray-800">
             Try Again
           </button>
         </div>
