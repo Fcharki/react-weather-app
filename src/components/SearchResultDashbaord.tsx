@@ -452,7 +452,7 @@ const processWeeklyForecast = (forecastList: WeatherForecastItem[]) => {
         ) : (
           <>
             {/* Mobile Header with Current Weather */}
-            <div className="flex-shrink-0 pt-[calc(7.5rem+env(safe-area-inset-top))] pb-5 px-6 text-center text-gray-100">
+            <div className="flex-shrink-0 pt-[calc(7.5rem+env(safe-area-inset-top))] pb-5 px-6 text-center text-gray-100 mt-8">
               <p className="text-xs uppercase tracking-wide opacity-70 mb-1">{getShortDate(timezoneOffset)}</p>
               <div className="flex items-center justify-center gap-1.5 mb-0.5">
                 <MapPin className="w-4 h-4 opacity-80" />
