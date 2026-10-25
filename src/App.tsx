@@ -1,35 +1,41 @@
-import { useState } from 'react';
+import { lazy, Suspense, useCallback, useState } from 'react';
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import WeatherNavBar from './components/NavBar';
-import WeatherDashboard from './components/DefaultWeatherDashboard';
-import SearchWeatherDashboard from './components/SearchResultDashbaord';
-import About from './components/About';
-import Footer from './components/Footer';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
+import WeatherDashboard from './components/weather/WeatherDashboard';
+import type { Coordinates } from './types/weather';
 
-interface Coordinates {
-  latitude: number;
-  longitude: number;
-}
+const About = lazy(() => import('./components/About'));
 
-// Default location: Agadir, Morocco
 const DEFAULT_COORDINATES: Coordinates = {
   latitude: 30.4278,
   longitude: -9.5981,
 };
 
+const getGeolocationErrorMessage = (error: GeolocationPositionError): string => {
+  switch (error.code) {
+    case error.PERMISSION_DENIED:
+      return 'Location permission was denied. Search for a city instead.';
+    case error.POSITION_UNAVAILABLE:
+      return 'Your location is currently unavailable.';
+    case error.TIMEOUT:
+      return 'Getting your location took too long. Please try again.';
+    default:
+      return 'Unable to access your location.';
+  }
+};
+
 const App = () => {
-  const [searchCity, setSearchCity] = useState<string>('');
+  const [searchCity, setSearchCity] = useState('');
   const [coordinates, setCoordinates] = useState<Coordinates>(DEFAULT_COORDINATES);
-  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
 
-  const handleSearch = (city: string) => {
+  const handleSearch = useCallback((city: string) => {
     setSearchCity(city);
-  };
+    setLocationError(null);
+  }, []);
 
-  // called when user explicitly clicks "Use my location"
-  const handleUseMyLocation = () => {
+  const handleUseMyLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setLocationError('Geolocation is not supported by your browser.');
       return;
@@ -44,45 +50,60 @@ const App = () => {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
-        setSearchCity(''); // clear any active search so location weather shows
+        setSearchCity('');
         setIsLoadingLocation(false);
       },
       (error) => {
-        console.error('Error getting location:', error);
-        setLocationError('Unable to access your location.');
+        setLocationError(getGeolocationErrorMessage(error));
         setIsLoadingLocation(false);
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 600000, // 10 minutes
+        maximumAge: 10 * 60 * 1000,
       }
     );
-  };
-
-  // which component to render for the home route
-  const renderWeatherComponent = () => {
-    if (searchCity) {
-      return <SearchWeatherDashboard city={searchCity} />;
-    }
-    return <WeatherDashboard coordinates={coordinates} isLoading={isLoadingLocation} />;
-  };
+  }, []);
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 parent">
+      <div className="parent flex min-h-dvh flex-col bg-gray-100 dark:bg-gray-900">
         <WeatherNavBar
           onSearch={handleSearch}
           onUseMyLocation={handleUseMyLocation}
           locationError={locationError}
+          isLocating={isLoadingLocation}
         />
-        <div className="flex-1">
+
+        <main className="flex-1">
           <Routes>
-            <Route path="/about" element={<About />} />
-            <Route path="/" element={renderWeatherComponent()} />
+            <Route
+              path="/about"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="flex min-h-[60vh] items-center justify-center pt-28 text-gray-500 dark:text-gray-400">
+                      Loading...
+                    </div>
+                  }
+                >
+                  <About />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/"
+              element={
+                <WeatherDashboard
+                  city={searchCity || undefined}
+                  coordinates={coordinates}
+                  isLoadingLocation={isLoadingLocation}
+                />
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </div>
-        <Footer />
+        </main>
       </div>
     </Router>
   );
